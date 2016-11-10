@@ -69,7 +69,7 @@ public class SyntaxTree
 		SyntaxTreeNode.Leaf p4 = tree.makeLeaf("z", 4587);
 		SyntaxTreeNode.Interior p5 = tree.makeInterior("+", p3, p4);
 		
-		LinkedList<SyntaxTreeNode> testList = instance.getTraversalList();
+		LinkedList<SyntaxTreeNode> testList = tree.getTraversalList();
 		
 		while (testList.size() > 0)
 		{
