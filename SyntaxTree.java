@@ -3,33 +3,33 @@ import java.util.*;
 public class SyntaxTree
 {
 	private static SyntaxTree instance = null;
-	private static SyntaxTreeNodeTypes root = null;
-	private static LinkedList<SyntaxTreeNodeTypes> traversalList = null;
+	private static SyntaxTreeNode root = null;
+	private static LinkedList<SyntaxTreeNode> traversalList = null;
 		
-	public SyntaxTreeNodeTypes.SyntaxTreeNode makeNode(String op, SyntaxTreeNodeTypes... children)
+	public SyntaxTreeNode.Interior makeInterior(String op, SyntaxTreeNode... children)
 	{
 		
-		SyntaxTreeNodeTypes.SyntaxTreeNode nodeToReturn = new SyntaxTreeNodeTypes.SyntaxTreeNode(op, children);
-		root = nodeToReturn;
+		SyntaxTreeNode.Interior node = new SyntaxTreeNode.Interior(op, children);
+		root = node;
 		
-		return nodeToReturn;
+		return node;
 	}
 	
-	public <ValueType> SyntaxTreeNodeTypes.SyntaxTreeLeaf makeLeaf(String op, ValueType lexValue)
+	public <ValueType> SyntaxTreeNode.Leaf makeLeaf(String op, ValueType lexValue)
 	{
-		return new SyntaxTreeNodeTypes.SyntaxTreeLeaf(op, lexValue);
+		return new SyntaxTreeNode.Leaf(op, lexValue);
 	}
 	
 	// Builds the program stack with a post-order traversal of the syntax tree.
-	private void buildListPostorder(SyntaxTreeNodeTypes startPoint)
+	private void buildListPostorder(SyntaxTreeNode startPoint)
 	{
 		if (startPoint == null) return;
 		
-		if (startPoint instanceof SyntaxTreeNodeTypes.SyntaxTreeNode)
+		if (startPoint instanceof SyntaxTreeNode.Interior)
 		{
-			for (int i = 0; i < ((SyntaxTreeNodeTypes.SyntaxTreeNode) startPoint).numChildren(); i++)
+			for (int i = 0; i < ((SyntaxTreeNode.Interior) startPoint).numChildren(); i++)
 			{
-				buildListPostorder(((SyntaxTreeNodeTypes.SyntaxTreeNode) startPoint).getChild(i));
+				buildListPostorder(((SyntaxTreeNode.Interior) startPoint).getChild(i));
 			}
 		}
 		
@@ -37,17 +37,17 @@ public class SyntaxTree
 	}
 	
 	// Returns a list containing the intermediate program representation in bottom-up order.
-	public LinkedList<SyntaxTreeNodeTypes> getTraversalList()
+	public LinkedList<SyntaxTreeNode> getTraversalList()
 	{
 		if (traversalList == null)
 		{
-			traversalList = new LinkedList<SyntaxTreeNodeTypes>();
+			traversalList = new LinkedList<SyntaxTreeNode>();
 			buildListPostorder(root);
-			return (LinkedList<SyntaxTreeNodeTypes>)traversalList.clone();
+			return (LinkedList<SyntaxTreeNode>)traversalList.clone();
 		}
 		else
 		{
-			return (LinkedList<SyntaxTreeNodeTypes>)traversalList.clone();
+			return (LinkedList<SyntaxTreeNode>)traversalList.clone();
 		}
 	}
 	
@@ -61,15 +61,15 @@ public class SyntaxTree
 	
 	public static void main(String args[])
 	{
-		SyntaxTree instance = SyntaxTree.getInstance();
+		SyntaxTree tree = SyntaxTree.getInstance();
 		
-		SyntaxTreeNodeTypes.SyntaxTreeLeaf p1 = instance.makeLeaf("butt1", 1234);
-		SyntaxTreeNodeTypes.SyntaxTreeLeaf p2 = instance.makeLeaf("butt2", 5678);
-		SyntaxTreeNodeTypes.SyntaxTreeNode p3 = instance.makeNode("-", p1, p2);
-		SyntaxTreeNodeTypes.SyntaxTreeLeaf p4 = instance.makeLeaf("butt3", 4587);
-		SyntaxTreeNodeTypes.SyntaxTreeNode p5 = instance.makeNode("+", p3, p4);
+		SyntaxTreeNode.Leaf p1 = tree.makeLeaf("x", 1234);
+		SyntaxTreeNode.Leaf p2 = tree.makeLeaf("y", 5678);
+		SyntaxTreeNode.Interior p3 = tree.makeInterior("-", p1, p2);
+		SyntaxTreeNode.Leaf p4 = tree.makeLeaf("z", 4587);
+		SyntaxTreeNode.Interior p5 = tree.makeInterior("+", p3, p4);
 		
-		LinkedList<SyntaxTreeNodeTypes> testList = instance.getTraversalList();
+		LinkedList<SyntaxTreeNode> testList = instance.getTraversalList();
 		
 		while (testList.size() > 0)
 		{
