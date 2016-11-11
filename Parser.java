@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Parser {
 	private Lexer lex = new Lexer();
+	private SyntaxTree syntaxTree = SyntaxTree.getInstance();
 	private Token lookahead = null;
 	private Token token = null;
 	private static Hashtable<String, List<String>> FIRST = new Hashtable<String, List<String>>();
@@ -405,20 +406,22 @@ public class Parser {
 			error();
 	}
 	
-	public void var() {
+	public SyntaxTreeNode.Leaf var() {
 		String first = checkFIRST("var");
-		if (first != null)
-		{
+		SyntaxTreeNode.Leaf node = null;
+		if (first != null) {
 			currentName = lookahead.getRepresentation();
 			
 			if (currentFuncName != null)
 				SymbolTableTree.getInstance().addEntry(new SymbolTableEntry(currentName, SymbolTableEntry.VARIABLE, currentType, null), currentFuncName);
 			else
 				SymbolTableTree.getInstance().addEntry(new SymbolTableEntry(currentName, SymbolTableEntry.VARIABLE, currentType, null));
+			node = syntaxTree.makeLeaf(first, SymbolTableTree.getInstance().getEntry(first));
 			match(TokenType.ID); var_r();
-		}
-		else
+		} else {
 			error();
+		}
+		return node;
 	}
 	
 	public void var_r() {
