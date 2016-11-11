@@ -97,345 +97,315 @@ public class Parser {
 	public Parser() throws IOException {
 		initializeFIRST();
 		initializeFOLLOW();
-		boolean validParse = false;
 		consumeToken(); consumeToken(); // Twice to initialize token & lookahead
 		
-		validParse = program();
+		program();
 		
-		System.out.println("\nValid Parse: " + validParse);
-		
-		if (validParse)
-		{
-			System.out.println("");
-			SymbolTableTree.getInstance().printSymbolTables();
-		}
-		else if (!validParse) System.out.println("Error on Line " + lex.getLineNum() + " at token " + lookahead.getRepresentation());
+		System.out.println("\nValid Parse: true");
+		System.out.println("");
+		SymbolTableTree.getInstance().printSymbolTables();
 	}
 	
 	// RECURSIVE FUNCTIONS
 	
-	public boolean program() {
+	public void program() {
 		String first = checkFIRST("program");
-		if(first != null)
-			return fdecls() && declarations() && statement_seq() && match('.');
-		else
-			return false;
+		if(first != null) {
+			fdecls(); declarations(); statement_seq(); match('.');
+		} else
+			error();
 	}
 	
-	public boolean fdecls() {
+	public void fdecls() {
 		String first = checkFIRST("fdecls");
-		if(first != null)
-			return fdec() && match(';') && fdec_r();
-		else //Epsilon
-			return true;
-	}
-	
-	public boolean fdec() {
-		String first = checkFIRST("fdec");
-		if(first != null)
-		{
-			return match("def") && type() && fname() && match("(") && params() && match(")") && declarations() && statement_seq() && match("fed");
+		if(first != null) {
+			fdec(); match(';'); fdec_r();
 		}
-		else
-			return false;
 	}
 	
-	public boolean fdec_r() {
+	public void fdec() {
+		String first = checkFIRST("fdec");
+		if(first != null) {
+			match("def"); type(); fname(); match("("); params(); match(")"); declarations(); statement_seq(); match("fed");
+		}
+	}
+	
+	public void fdec_r() {
 		String first = checkFIRST("fdec_r");
-		if(first != null)
-			return fdec() && match(";") && fdec_r();
-		else //Epsilon
-			return true;
+		if(first != null) {
+			fdec(); match(";"); fdec_r();
+		}
 	}
 
-	public boolean params() {
+	public void params() {
 		String first = checkFIRST("params");
-		if (first != null)
-			return type() && var() && params_r();
-		else
-			return true;
+		if (first != null) {
+			type(); var(); params_r();
+		}
 	}
 	
-	public boolean params_r() {
+	public void params_r() {
 		String first = checkFIRST("params_r");
-		if (first != null)
-			return match(",") && params();
-		else //Epsilon
-			return true;
+		if (first != null) {
+			match(","); params();
+		}
 	}
 	
-	public boolean fname() {
+	public void fname() {
 		String first = checkFIRST("fname");
-		if (first != null)
-		{
+		if (first != null) {
 			currentName = lookahead.getRepresentation();
 			currentFuncName = currentName;
 			SymbolTableTree.getInstance().addEntry(new SymbolTableEntry(currentName, SymbolTableEntry.FUNCTION, currentType, null));
-			return match(TokenType.ID);
+			match(TokenType.ID);
 		}
 		else
-			return false;
+			error();
 	}
 	
-	public boolean declarations() {
+	public void declarations() {
 		String first = checkFIRST("declarations");
-		if(first != null)
-			return decl() && match(';') && decl_r();
-		else //Epsilon
-			return true;
+		if(first != null) {
+			decl(); match(';'); decl_r();
+		}
 	}
 	
-	public boolean decl() {
+	public void decl() {
 		String first = checkFIRST("decl");
-		if(first != null)
-			return type() && varlist();
-		else
-			return false;
+		if(first != null) {
+			type(); varlist();
+		} else
+			error();
 	}
 	
-	public boolean decl_r() {
+	public void decl_r() {
 		String first = checkFIRST("decl_r");
-		if(first != null)
-			return decl() && match(";") && decl_r();
-		else //Epsilon
-			return true;
+		if(first != null) {
+			decl(); match(";"); decl_r();
+		}
 	}
 	
-	public boolean type() {
+	public void type() {
 		String first = checkFIRST("type");
 		
 		switch(first) {
 			case "int":
 				currentType = SymbolTableEntry.INT;
-				return match("int");
+				match("int");
+				return;
 			case "double":
 				currentType = SymbolTableEntry.DOUBLE;
-				return match("double");
+				match("double");
+				return;
 			default:
-				return false;
+				error();
 		}
 	}
 	
-	public boolean statement_seq() {
+	public void statement_seq() {
 		String first = checkFIRST("statement_seq");
-		if(first != null)
-			return statement() && statement_seq_r();
-		else //Epsilon
-			return true;
+		if(first != null) {
+			statement(); statement_seq_r();
+		}
 	}
 	
-	public boolean varlist() {
+	public void varlist() {
 		String first = checkFIRST("varlist");
-		if (first != null)
-			return var() && varlist_r();
-		else
-			return false;
+		if (first != null) {
+			var(); varlist_r();
+		} else
+			error();
 	}
 	
-	public boolean varlist_r() {
+	public void varlist_r() {
 		String first = checkFIRST("varlist_r");
-		if (first != null)
-			return match(",") && varlist();
-		else //Epsilon
-			return true;
+		if (first != null) {
+			match(","); varlist();
+		}
 	}
 	
-	public boolean statement() {
+	public void statement() {
 		String first = checkFIRST("statement");
 		switch(first) {
 			case "ID":
-				return var() && match("=") && expr();
+				var(); match("="); expr(); return;
 			case "if":
-				return match("if") && bexpr() && match("then") && statement_seq() && opt_else() && match("fi"); 
+				match("if"); bexpr(); match("then"); statement_seq(); opt_else(); match("fi"); return;
 			case "while":
-				return match("while") && bexpr() && match("do") && statement_seq() && match("od");
+				match("while"); bexpr(); match("do"); statement_seq(); match("od"); return;
 			case "print":
-				return match("print") && expr();
+				match("print"); expr(); return;
 			case "return":
-				return match("return") && expr();
+				match("return"); expr(); return;
 			default: //Epsilon
-				return true;
+				return;
 		}
 	}
 	
-	public boolean statement_seq_r() {
+	public void statement_seq_r() {
 		String first = checkFIRST("statement_seq_r");
-		if(first != null)
-			return match(";") && statement_seq();
-		else //Epsilon
-			return true;
+		if(first != null) {
+			match(";"); statement_seq();
+		}
 	}
 
-	public boolean opt_else() {
+	public void opt_else() {
 		String first = checkFIRST("opt_else");
-		if (first != null)
-			return match("else") && statement_seq();
-		else //Epsilon
-			return true;
+		if (first != null) {
+			match("else"); statement_seq();
+		}
 	}
 	
-	public boolean expr()
+	public void expr()
 	{
 		String first = checkFIRST("expr");
-		if (first != null)
-			return term() && term_r();
-		else
-			return false;
+		if (first != null) {
+			term(); term_r();
+		} else
+			error();
 	}
 	
-	public boolean term_r() {
+	public void term_r() {
 		String first = checkFIRST("term_r");
 		
 		if (first != null) {
-			if (first.equals("+"))
-				return match("+") && term() && term_r();
-			else if (first.equals("-"))
-				return match("-") && term() && term_r();
-			else
-				return false;
-		} else { //Epsilon
-			return true;
+			if (first.equals("+")) {
+				match("+"); term(); term_r();
+			} else if (first.equals("-")) {
+				match("-"); term(); term_r();
+			} else
+				error();
 		}
 	}
 	
-	public boolean term() {
+	public void term() {
 		String first = checkFIRST("term");
 		
-		if (first != null)
-			return factor() && factor_r();
-		else
-			return false;
+		if (first != null) {
+			factor(); factor_r();
+		} else
+			error();
 	}
 	
-	public boolean factor_r() {
+	public void factor_r() {
 		String first = checkFIRST("factor_r");
 		if (first != null) {
 			switch(first) {
 				case "*":
-					return match("*") && factor() && factor_r();
+					match("*"); factor(); factor_r(); return;
 				case "/":
-					return match("/") && factor() && factor_r();
+					match("/"); factor(); factor_r(); return;
 				case "%":
-					return match("%") && factor() && factor_r();
+					match("%"); factor(); factor_r(); return;
 				default:
-					return false;
+					error();
 			}
-		} else { //Epsilon
-			return true;
 		}
 	}
 	
 	// Careful
-	 public boolean factor() {
+	 public void factor() {
 		String first = checkFIRST("factor");
 		if (first != null) {
-			if (first.equals("ID"))
-				return match(TokenType.ID) && factor_r_p();
-			else if (first.equals("NUMBER"))
-				return match(TokenType.INT) || match(TokenType.DOUBLE);
-			else if (first.equals("("))
-				return match("(") && expr() && match(")");
-			else if (first.equals("ID"))
-				return var();
-			else
-				return false;
+			if (first.equals("ID")) {
+				match(TokenType.ID); factor_r_p();
+			} else if (first.equals("NUMBER")) {
+				match(TokenType.DOUBLE); //Technically INT too
+			} else if (first.equals("(")) {
+				match("("); expr(); match(")");
+			} else if (first.equals("ID")) {
+				var();
+			} else
+				error();
 		} else {
-			return false;
+			error();
 		}
 	}
  
-	public boolean factor_r_p() {
+	public void factor_r_p() {
 		String first = checkFIRST("factor_r_p");
 		if (first != null) {
-			if (first.equals("("))
-				return match("(") && exprseq() && match(")");
-			else // EPSILON
-				return true;
-		} else {
-			return true;
+			if (first.equals("(")) {
+				match("("); exprseq(); match(")");
+			}
 		}
 	}
 	
-	public boolean exprseq() {
+	public void exprseq() {
 		String first = checkFIRST("exprseq");
-		if (first != null)
-			return expr() && exprseq_r();
-		else //Epsilon
-			return true;
+		if (first != null) {
+			expr(); exprseq_r();
+		}
 	}
 	
-	public boolean exprseq_r() {
+	public void exprseq_r() {
 		String first = checkFIRST("exprseq_r");
-		if (first != null)
-			return match(",") && exprseq();
-		else //Epsilon
-			return true;
+		if (first != null) {
+			match(","); exprseq();
+		}
 	}
 	
-	public boolean bexpr() {
+	public void bexpr() {
 		String first = checkFIRST("bexpr");
-		if (first != null)
-			return bterm() && bterm_r();
-		else
-			return false;
+		if (first != null) {
+			bterm(); bterm_r();
+		}
 	}
 	
-	public boolean bterm_r() {
+	public void bterm_r() {
 		String first = checkFIRST("bterm_r");
-		if (first != null)
-			return match("or") && bterm() && bterm_r();
-		else //Epsilon
-			return true;
+		if (first != null) {
+			match("or"); bterm(); bterm_r();
+		}
 	}
 	
-	public boolean bterm() {
+	public void bterm() {
 		String first = checkFIRST("bterm");
-		if (first != null)
-			return bfactor() && bfactor_r();
-		else
-			return false;
+		if (first != null) {
+			bfactor(); bfactor_r();
+		} else
+			error();
 	}
 	
-	public boolean bfactor_r() {
+	public void bfactor_r() {
 		String first = checkFIRST("bfactor_r");
-		if (first != null)
-			return match("and") && bfactor() && bfactor_r();
-		else //Epsilon
-			return true;
+		if (first != null) {
+			match("and"); bfactor(); bfactor_r();
+		}
 	}
 	
-	public boolean bfactor() {
+	public void bfactor() {
 		String first = checkFIRST("bfactor");
 		switch (first) {
 			case "(":
-				return match("(") && bfactor_r_p() && match(")");
+				match("("); bfactor_r_p(); match(")"); return;
 			case "not":
-				return match("not") && bfactor();
+				match("not"); bfactor(); return;
 			default:
-				return false;
+				error();
 		}
 	}
 	
 	// Careful
-	public boolean bfactor_r_p() {
+	public void bfactor_r_p() {
 		String first = checkFIRST("bfactor_r_p");
-		if (FIRST.get("bfactor_r_p").contains(first) && token.getType() == TokenType.COMP)
-			return expr() && comp() && expr();
-		else if (FIRST.get("bfactor_r_p").contains(first))
-			return bexpr();
-		else 
-			return false;
+		if (FIRST.get("bfactor_r_p").contains(first) && token.getType() == TokenType.COMP) {
+			expr(); comp(); expr();
+		} else if (FIRST.get("bfactor_r_p").contains(first)) {
+			bexpr();
+		} else 
+			error();
 	}
 	
-	public boolean comp() {
+	public void comp() {
 		String first = checkFIRST("comp");
-		if (first != null)
-			return match(TokenType.COMP);
-		else
-			return false;
+		if (first != null) {
+			match(TokenType.COMP);
+		} else
+			error();
 	}
 	
-	public boolean var() {
+	public void var() {
 		String first = checkFIRST("var");
 		if (first != null)
 		{
@@ -445,18 +415,17 @@ public class Parser {
 				SymbolTableTree.getInstance().addEntry(new SymbolTableEntry(currentName, SymbolTableEntry.VARIABLE, currentType, null), currentFuncName);
 			else
 				SymbolTableTree.getInstance().addEntry(new SymbolTableEntry(currentName, SymbolTableEntry.VARIABLE, currentType, null));
-			return match(TokenType.ID) && var_r();
+			match(TokenType.ID); var_r();
 		}
 		else
-			return false;
+			error();
 	}
 	
-	public boolean var_r() {
+	public void var_r() {
 		String first = checkFIRST("var_r");
-		if (first != null)
-			return match("[") && expr() && match("]");
-		else //Epsilon
-			return true;
+		if (first != null) {
+			match("["); expr(); match("]");
+		}
 	}
 	
 	// UTILITY FUNCTIONS
@@ -489,18 +458,17 @@ public class Parser {
 		}
 	}
 	
-	public boolean match() {
+	public void match() {
 		consumeToken();
-		return true;
 	}
 	
-	public boolean match(char c) {
+	public void match(char c) {
 		boolean isMatch = lookahead.getRepresentation().equals(String.valueOf(c));
 		if (isMatch) consumeToken();
-		return isMatch;
+		else error();
 	}
 	
-	public boolean match(String s) {
+	public void match(String s) {
 		boolean isMatch = lookahead.getRepresentation().equals(s);
 		if (isMatch) 
 		{
@@ -509,12 +477,25 @@ public class Parser {
 			
 			consumeToken();
 		}
-		return isMatch;
+		else error();
 	}
 	
-	public boolean match(TokenType type) {
-		boolean isMatch = lookahead.getType() == type;
+	public void match(TokenType type) {
+		boolean isMatch = false;
+		if (type == TokenType.INT || type == TokenType.DOUBLE) { //Cheat, treat INT and DOUBLE as same
+			isMatch = type == TokenType.INT || type == TokenType.DOUBLE;
+		} else {
+			isMatch = lookahead.getType() == type;
+		}
 		if (isMatch) consumeToken();
-		return isMatch;
+		else error();
+	}
+	
+	public void error() {
+		System.out.println("\nValid Parse: false");
+		System.out.println("Error on Line " + lex.getLineNum() + " at token " + lookahead.getRepresentation());
+		//StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+		//System.out.println(Arrays.toString(stackTraceElements));
+		System.exit(0);
 	}
 }
