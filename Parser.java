@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Parser {
 	private Lexer lex = new Lexer();
+	private SyntaxTree syntaxTree = SyntaxTree.getInstance();
 	private Token lookahead = null;
 	private Token token = null;
 	private static Hashtable<String, List<String>> FIRST = new Hashtable<String, List<String>>();
@@ -480,15 +481,36 @@ public class Parser {
 		else error();
 	}
 	
-	public void match(TokenType type) {
+	public SyntaxTreeNode.Leaf match(TokenType type) {
 		boolean isMatch = false;
-		if (type == TokenType.INT || type == TokenType.DOUBLE) { //Cheat, treat INT and DOUBLE as same
-			isMatch = type == TokenType.INT || type == TokenType.DOUBLE;
+		SyntaxTreeNode.Leaf node = null;
+
+		if (type == TokenType.INT) { 
+			node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
+		} else if (type == TokenType.DOUBLE) {
+			node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
+		} else if (type == TokenType.ID){
+			isMatch = true;
+			
+			if (currentFuncName != null)
+			{
+				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), SymbolTableTree.getInstance().getEntry(lookahead.getRepresentation(), currentFuncName));
+			}
+			else
+			{
+				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), SymbolTableTree.getInstance().getEntry(lookahead.getRepresentation()));
+			}
 		} else {
-			isMatch = lookahead.getType() == type;
+			isMatch = type == lookahead.getType();
 		}
-		if (isMatch) consumeToken();
+
+		if (isMatch)
+		{
+			consumeToken();
+		}
 		else error();
+
+		return node;
 	}
 	
 	public void error() {
