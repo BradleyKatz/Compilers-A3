@@ -16,9 +16,11 @@ public class SyntaxTreeNode
 	}
 	
 	// Models operators
-	public static class Interior extends SyntaxTreeNode
+	public static class Interior <ValueType> extends SyntaxTreeNode
 	{
 		private ArrayList<SyntaxTreeNode> children;
+
+		private ValueType val; // Possible result of computation
 		
 		public Interior(String inputOp)
 		{
