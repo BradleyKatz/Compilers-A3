@@ -486,8 +486,10 @@ public class Parser {
 		SyntaxTreeNode.Leaf node = null;
 
 		if (type == TokenType.INT) { 
+			isMatch = true;
 			node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
 		} else if (type == TokenType.DOUBLE) {
+			isMatch = true;
 			node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
 		} else if (type == TokenType.ID){
 			isMatch = true;
