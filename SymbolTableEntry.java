@@ -33,6 +33,11 @@ public class SymbolTableEntry<ValueType>
 	public String getDataType() {return dataType;}
 	public ValueType getValue() {return value;}
 	
+	public void setValue(ValueType newValue)
+	{
+		value = newValue;
+	}
+	
 	public boolean equals(Object otherObject)
 	{
 		if (otherObject != null && otherObject instanceof SymbolTableEntry)

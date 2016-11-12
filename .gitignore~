@@ -1,0 +1,13 @@
+/Id.class
+/Lexer.class
+/Parser.class
+/Reserved.class
+/SymbolTableEntry.class
+/SymbolTableTree$SymbolTableNode.class
+/SymbolTableTree.class
+/SyntaxTree.class
+/SyntaxTreeNodeTypes$SyntaxTreeLeaf.class
+/SyntaxTreeNodeTypes$SyntaxTreeNode.class
+/SyntaxTreeNodeTypes.class
+/Token.class
+/TokenType.class

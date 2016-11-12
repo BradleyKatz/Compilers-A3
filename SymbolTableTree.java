@@ -196,6 +196,16 @@ public class SymbolTableTree
 		return locateFunctionTable(atFunction).get(nameToFind) != null;
 	}
 	
+	public <ValueType> void updateValue(String variableName, ValueType value)
+	{
+		globalTable.get(variableName).setValue(value);
+	}
+	
+	public <ValueType> void updateValue(String variableName, ValueType value, String atFunction)
+	{
+		locateFunctionTable(atFunction).get(variableName).setValue(value);
+	}
+	
 	public void printSymbolTables()
 	{
 		globalTable.printTable();

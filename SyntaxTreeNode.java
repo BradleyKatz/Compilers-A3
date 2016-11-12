@@ -20,6 +20,12 @@ public class SyntaxTreeNode
 	{
 		private ArrayList<SyntaxTreeNode> children;
 		
+		public Interior(String inputOp)
+		{
+			super(inputOp);
+			this.children = new ArrayList<SyntaxTreeNode>();
+		}
+		
 		public Interior(String inputOp, SyntaxTreeNode... inputChildren)
 		{
 			super(inputOp);
@@ -30,6 +36,11 @@ public class SyntaxTreeNode
 				currentChild.parent = this;
 				this.children.add(currentChild);
 			}
+		}
+		
+		public SyntaxTreeNode addChild(SyntaxTreeNode child)
+		{
+			this.children.add(child);
 		}
 		
 		public SyntaxTreeNode getChild(int index)

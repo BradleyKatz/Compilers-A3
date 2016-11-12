@@ -5,7 +5,15 @@ public class SyntaxTree
 	private static SyntaxTree instance = null;
 	private static SyntaxTreeNode root = null;
 	private static LinkedList<SyntaxTreeNode> traversalList = null;
+	
+	public SyntaxTreeNode.Interior makeInterior(String op)
+	{
+		SyntaxTreeNode.Interior node = new SyntaxTreeNode.Interior(op);
+		root = op;
 		
+		return node;
+	}
+	
 	public SyntaxTreeNode.Interior makeInterior(String op, SyntaxTreeNode... children)
 	{
 		

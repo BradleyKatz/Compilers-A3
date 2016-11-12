@@ -225,21 +225,36 @@ public class Parser {
 		}
 	}
 	
-	public void statement() {
+	public SyntaxTreeNode statement() {
 		String first = checkFIRST("statement");
 		switch(first) {
 			case "ID":
-				var(); match("="); expr(); return;
+				SyntaxTreeNode varLeaf, exprNode;
+				
+				varNode = var(); match("="); exprNode = expr(); 
+				return syntaxTree.makeInterior("=", varNode, exprNode);
 			case "if":
-				match("if"); bexpr(); match("then"); statement_seq(); opt_else(); match("fi"); return;
+				SyntaxTreeNode bexprNode, seqNode, elseNode;
+				match("if"); bexprNode = bexpr(); match("then"); seqNode = statement_seq(); elseNode = opt_else(); match("fi");
+				
+				if (elseNode != null)
+					return syntaxTree.makeInterior("if", bexprNode, seqNode, elseNode);
+				else
+					return syntaxTree.makeInterior("if", bexprNode, seqNode);
 			case "while":
-				match("while"); bexpr(); match("do"); statement_seq(); match("od"); return;
+				SyntaxTreeNode bexprNode, seqNode;
+				match("while"); bexprNode = bexpr(); match("do"); seqNode = statement_seq(); match("od");
+				return syntaxTree.makeInterior("while", bexprNode, seqNode);
 			case "print":
-				match("print"); expr(); return;
+				SyntaxTreeNode exprNode;
+				match("print"); exprNode = expr();
+				return syntaxTree.makeInterior("print", exprNode);
 			case "return":
-				match("return"); expr(); return;
+				SyntaxTreeNode exprNode;
+				match("return"); exprNode = expr();
+				return syntaxTree.makeInterior("return", exprNode);
 			default: //Epsilon
-				return;
+				return null;
 		}
 	}
 	
@@ -257,7 +272,7 @@ public class Parser {
 		}
 	}
 	
-	public void expr()
+	public SyntaxTreeNode expr()
 	{
 		String first = checkFIRST("expr");
 		if (first != null) {
@@ -406,7 +421,7 @@ public class Parser {
 			error();
 	}
 	
-	public void var() {
+	public SyntaxTreeNode.Leaf var() {
 		String first = checkFIRST("var");
 		if (first != null)
 		{
@@ -416,10 +431,13 @@ public class Parser {
 				SymbolTableTree.getInstance().addEntry(new SymbolTableEntry(currentName, SymbolTableEntry.VARIABLE, currentType, null), currentFuncName);
 			else
 				SymbolTableTree.getInstance().addEntry(new SymbolTableEntry(currentName, SymbolTableEntry.VARIABLE, currentType, null));
-			match(TokenType.ID); var_r();
+			
+			return match(TokenType.ID); var_r();
 		}
-		else
+		else {
 			error();
+			return null;
+		}
 	}
 	
 	public void var_r() {
