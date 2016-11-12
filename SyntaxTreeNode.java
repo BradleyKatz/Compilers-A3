@@ -33,12 +33,15 @@ public class SyntaxTreeNode
 			
 			for (SyntaxTreeNode currentChild : inputChildren)
 			{
-				currentChild.parent = this;
-				this.children.add(currentChild);
+				if (currentChild != null)
+				{
+					currentChild.parent = this;
+					this.children.add(currentChild);
+				}
 			}
 		}
 		
-		public SyntaxTreeNode addChild(SyntaxTreeNode child)
+		public void addChild(SyntaxTreeNode child)
 		{
 			this.children.add(child);
 		}
