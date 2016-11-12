@@ -206,10 +206,47 @@ public class Parser {
 	public void statement_seq() {
 		String first = checkFIRST("statement_seq");
 		if(first != null) {
+			
 			statement(); statement_seq_r();
 		}
 	}
 	
+	public void statement_seq_r() {
+		String first = checkFIRST("statement_seq_r");
+		if(first != null) {
+			match(";"); statement_seq();
+		}
+	}
+	
+	public SyntaxTreeNode statement() {
+		String first = checkFIRST("statement");
+		SyntaxTreeNode varNode, exprNode, bexprNode, seqNode, elseNode;
+		
+		switch(first) {
+			case "ID":
+				varNode = var(); match("="); exprNode = expr(); 
+				return syntaxTree.makeInterior("=", varNode, exprNode);
+			case "if":
+				match("if"); bexprNode = bexpr(); match("then"); seqNode = statement_seq(); elseNode = opt_else(); match("fi");
+				
+				if (elseNode != null)
+					return syntaxTree.makeInterior("if", bexprNode, seqNode, elseNode);
+				else
+					return syntaxTree.makeInterior("if", bexprNode, seqNode);
+			case "while":
+				match("while"); bexprNode = bexpr(); match("do"); seqNode = statement_seq(); match("od");
+				return syntaxTree.makeInterior("while", bexprNode, seqNode);
+			case "print":
+				match("print"); exprNode = expr();
+				return syntaxTree.makeInterior("print", exprNode);
+			case "return":
+				match("return"); exprNode = expr();
+				return syntaxTree.makeInterior("return", exprNode);
+			default: //Epsilon
+				return null;
+		}
+	}
+
 	public void varlist() {
 		String first = checkFIRST("varlist");
 		if (first != null) {
@@ -225,46 +262,6 @@ public class Parser {
 		}
 	}
 	
-	public SyntaxTreeNode statement() {
-		String first = checkFIRST("statement");
-		switch(first) {
-			case "ID":
-				SyntaxTreeNode varLeaf, exprNode;
-				
-				varNode = var(); match("="); exprNode = expr(); 
-				return syntaxTree.makeInterior("=", varNode, exprNode);
-			case "if":
-				SyntaxTreeNode bexprNode, seqNode, elseNode;
-				match("if"); bexprNode = bexpr(); match("then"); seqNode = statement_seq(); elseNode = opt_else(); match("fi");
-				
-				if (elseNode != null)
-					return syntaxTree.makeInterior("if", bexprNode, seqNode, elseNode);
-				else
-					return syntaxTree.makeInterior("if", bexprNode, seqNode);
-			case "while":
-				SyntaxTreeNode bexprNode, seqNode;
-				match("while"); bexprNode = bexpr(); match("do"); seqNode = statement_seq(); match("od");
-				return syntaxTree.makeInterior("while", bexprNode, seqNode);
-			case "print":
-				SyntaxTreeNode exprNode;
-				match("print"); exprNode = expr();
-				return syntaxTree.makeInterior("print", exprNode);
-			case "return":
-				SyntaxTreeNode exprNode;
-				match("return"); exprNode = expr();
-				return syntaxTree.makeInterior("return", exprNode);
-			default: //Epsilon
-				return null;
-		}
-	}
-	
-	public void statement_seq_r() {
-		String first = checkFIRST("statement_seq_r");
-		if(first != null) {
-			match(";"); statement_seq();
-		}
-	}
-
 	public void opt_else() {
 		String first = checkFIRST("opt_else");
 		if (first != null) {
@@ -368,61 +365,89 @@ public class Parser {
 		}
 	}
 	
-	public void bterm_r() {
+	public SyntaxTreeNode bterm_r() {
 		String first = checkFIRST("bterm_r");
+		SyntaxTreeNode btermNode, bterm_rNode;
+		
 		if (first != null) {
-			match("or"); bterm(); bterm_r();
+			match("or"); btermNode = bterm(); bterm_rNode = bterm_r();
+			return syntaxTree.makeInterior("or", btermNode, bterm_rNode);
+		}
+		else{
+			return null;
 		}
 	}
 	
-	public void bterm() {
+	public SyntaxTreeNode bterm() {
 		String first = checkFIRST("bterm");
+		SyntaxTreeNode bfactorNode, bfactor_rNode;
+		
 		if (first != null) {
-			bfactor(); bfactor_r();
+			bfactorNode = bfactor(); bfactor_rNode = bfactor_r();
+			((SyntaxTreeNode.Interior)bfactorNode).addChild(bfactor_rNode);
+			return bfactorNode;
 		} else
 			error();
+			return null;
 	}
 	
-	public void bfactor_r() {
+	public SyntaxTreeNode bfactor_r() {
 		String first = checkFIRST("bfactor_r");
+		SyntaxTreeNode bfactorNode, bfactor_rNode;
+		
 		if (first != null) {
-			match("and"); bfactor(); bfactor_r();
+			match("and"); bfactorNode = bfactor(); bfactor_rNode = bfactor_r();
+			return syntaxTree.makeInterior("and", bfactorNode, bfactor_rNode);
+		} else {
+			return null;
 		}
 	}
 	
-	public void bfactor() {
+	public SyntaxTreeNode bfactor() {
 		String first = checkFIRST("bfactor");
+		SyntaxTreeNode bfactor_r_p_node, bfactorNode;
+		
 		switch (first) {
 			case "(":
-				match("("); bfactor_r_p(); match(")"); return;
+				match("("); bfactor_r_p_node = bfactor_r_p(); match(")");
+				return bfactor_r_p_node;
 			case "not":
-				match("not"); bfactor(); return;
+				match("not"); bfactorNode = bfactor();
+				return syntaxTree.makeInterior("not", bfactorNode);
 			default:
 				error();
+				return null;
 		}
 	}
 	
 	// Careful
-	public void bfactor_r_p() {
+	public SyntaxTreeNode bfactor_r_p() {
 		String first = checkFIRST("bfactor_r_p");
+		SyntaxTreeNode e1Node, e2Node, compNode;
+		
 		if (FIRST.get("bfactor_r_p").contains(first) && token.getType() == TokenType.COMP) {
-			expr(); comp(); expr();
+			e1Node = expr(); compNode = comp(); e2Node = expr();
+			((SyntaxTreeNode.Interior)compNode).addChild(e1Node);
+			((SyntaxTreeNode.Interior)compNode).addChild(e2Node);
+			return compNode;
 		} else if (FIRST.get("bfactor_r_p").contains(first)) {
-			bexpr();
+			return bexpr();
 		} else 
 			error();
 	}
 	
-	public void comp() {
+	public SyntaxTreeNode comp() {
 		String first = checkFIRST("comp");
 		if (first != null) {
-			match(TokenType.COMP);
+			return match(TokenType.COMP);
 		} else
 			error();
 	}
 	
-	public SyntaxTreeNode.Leaf var() {
+	public SyntaxTreeNode var() {
 		String first = checkFIRST("var");
+		SyntaxTreeNode nodeToReturn = null;
+		
 		if (first != null)
 		{
 			currentName = lookahead.getRepresentation();
@@ -432,11 +457,12 @@ public class Parser {
 			else
 				SymbolTableTree.getInstance().addEntry(new SymbolTableEntry(currentName, SymbolTableEntry.VARIABLE, currentType, null));
 			
-			return match(TokenType.ID); var_r();
+			nodeToReturn = match(TokenType.ID); var_r();
+			return nodeToReturn;
 		}
 		else {
 			error();
-			return null;
+			return nodeToReturn;
 		}
 	}
 	
@@ -499,9 +525,9 @@ public class Parser {
 		else error();
 	}
 	
-	public SyntaxTreeNode.Leaf match(TokenType type) {
+	public SyntaxTreeNode match(TokenType type) {
 		boolean isMatch = false;
-		SyntaxTreeNode.Leaf node = null;
+		SyntaxTreeNode node = null;
 
 		if (type == TokenType.INT) { 
 			isMatch = true;
@@ -520,8 +546,30 @@ public class Parser {
 			{
 				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), SymbolTableTree.getInstance().getEntry(lookahead.getRepresentation()));
 			}
+		} else if (type == TokenType.COMP){
+			isMatch = true;
+			node = syntaxTree.makeInterior(lookahead.getRepresentation());
 		} else {
 			isMatch = type == lookahead.getType();
+			
+			switch(lookahead.getRepresentation())
+			{
+				case "+":
+					node = syntaxTree.makeInterior("+");
+					break;
+				case "-":
+					node = syntaxTree.makeInterior("-");
+					break;
+				case "*":
+					node = syntaxTree.makeInterior("*");
+					break;
+				case "/":
+					node = syntaxTree.makeInterior("/");
+					break;
+				case "%":
+					node = syntaxTree.makeInterior("%");
+					break;
+			}
 		}
 
 		if (isMatch)
