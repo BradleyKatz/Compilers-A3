@@ -9,7 +9,7 @@ public class SyntaxTree
 	public SyntaxTreeNode.Interior makeInterior(String op)
 	{
 		SyntaxTreeNode.Interior node = new SyntaxTreeNode.Interior(op);
-		root = op;
+		root = node;
 		
 		return node;
 	}
