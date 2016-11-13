@@ -80,4 +80,5 @@ public class SymbolTableEntry<ValueType>
 	{
 		return value.toString();
 	}
+
 }

@@ -2,14 +2,15 @@ import java.util.*;
 
 public class SyntaxTree
 {
-	private static SyntaxTree instance = null;
 	private static SyntaxTreeNode root = null;
 	private static LinkedList<SyntaxTreeNode> traversalList = null;
 	
 	public SyntaxTreeNode.Interior makeInterior(String op)
 	{
 		SyntaxTreeNode.Interior node = new SyntaxTreeNode.Interior(op);
-		root = node;
+		
+		if (root == null)
+			root = node;
 		
 		return node;
 	}
@@ -18,7 +19,9 @@ public class SyntaxTree
 	{
 		
 		SyntaxTreeNode.Interior node = new SyntaxTreeNode.Interior(op, children);
-		root = node;
+		
+		if (root == null)
+			root = node;
 		
 		return node;
 	}
@@ -59,14 +62,7 @@ public class SyntaxTree
 		}
 	}
 	
-	public static SyntaxTree getInstance()
-	{
-		if (instance == null)
-			instance = new SyntaxTree();
-		
-		return instance;
-	}
-	
+	/*
 	public static void main(String args[])
 	{
 		SyntaxTree tree = SyntaxTree.getInstance();
@@ -184,4 +180,5 @@ public class SyntaxTree
 		Interpreter interpreter = new Interpreter(tree);
 		interpreter.interpret();
 	}
+	*/
 }

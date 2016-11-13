@@ -2,10 +2,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class Parser {
 	private Lexer lex = new Lexer();
-	private SyntaxTree syntaxTree = SyntaxTree.getInstance();
+	public SyntaxTree syntaxTree = new SyntaxTree();
+	public ArrayList<FunctionTreeNode> subtrees = new ArrayList<FunctionTreeNode>();
 	private Token lookahead = null;
 	private Token token = null;
 	private static Hashtable<String, List<String>> FIRST = new Hashtable<String, List<String>>();
@@ -93,28 +96,38 @@ public class Parser {
 	// Calls Parser
 	public static void main(String[] args) throws IOException {
 		Parser parser = new Parser();
+		parser.program();
+		
+	//	System.out.println("\nValid Parse: true");
+	//	System.out.println("");
+	//	SymbolTableTree.getInstance().printSymbolTables();
+	
+		LinkedList<SyntaxTreeNode> testList = parser.syntaxTree.getTraversalList();
+		
+		while (testList.size() > 0)
+		{
+			System.out.println(testList.getLast());
+			testList.removeLast();
+		}
 	}
 	
 	public Parser() throws IOException {
 		initializeFIRST();
 		initializeFOLLOW();
 		consumeToken(); consumeToken(); // Twice to initialize token & lookahead
-		
-		program();
-		
-		System.out.println("\nValid Parse: true");
-		System.out.println("");
-		SymbolTableTree.getInstance().printSymbolTables();
 	}
 	
 	// RECURSIVE FUNCTIONS
 	
-	public void program() {
+	public SyntaxTreeNode program() {
 		String first = checkFIRST("program");
 		if(first != null) {
-			fdecls(); declarations(); statement_seq(); match('.');
+			SyntaxTreeNode.Interior statements = syntaxTree.makeInterior("statement_seq");
+			fdecls(); declarations(); statement_seq(statements); match('.');
+			return statements;
 		} else
 			error();
+			return null;
 	}
 	
 	public void fdecls() {
@@ -127,7 +140,12 @@ public class Parser {
 	public void fdec() {
 		String first = checkFIRST("fdec");
 		if(first != null) {
-			match("def"); type(); fname(); match("("); params(); match(")"); declarations(); statement_seq(); match("fed");
+			SyntaxTree currentFuncBody = new SyntaxTree();
+			SyntaxTreeNode.Interior currentFuncRoot = currentFuncBody.makeInterior("statement_seq");
+			
+			match("def"); type(); fname(); match("("); params(); match(")"); declarations(); statement_seq(currentFuncRoot); match("fed");
+			
+			subtrees.add(new FunctionTreeNode(currentFuncName, currentFuncBody));
 		}
 	}
 	
@@ -203,39 +221,41 @@ public class Parser {
 		}
 	}
 	
-	public void statement_seq() {
+	public void statement_seq(SyntaxTreeNode.Interior seqList) {
 		String first = checkFIRST("statement_seq");
+		SyntaxTreeNode statementNode;
+		
 		if(first != null) {
-			
-			statement(); statement_seq_r();
+			seqList.addChild(statement()); statement_seq_r(seqList);
 		}
 	}
 	
-	public void statement_seq_r() {
+	public void statement_seq_r(SyntaxTreeNode.Interior seqList) {
 		String first = checkFIRST("statement_seq_r");
 		if(first != null) {
-			match(";"); statement_seq();
+			match(";"); statement_seq(seqList);
 		}
 	}
 	
 	public SyntaxTreeNode statement() {
 		String first = checkFIRST("statement");
-		SyntaxTreeNode varNode, exprNode, bexprNode, seqNode, elseNode;
+		SyntaxTreeNode varNode, exprNode, bexprNode, elseNode;
+		SyntaxTreeNode.Interior statements = syntaxTree.makeInterior("statement_seq");
 		
 		switch(first) {
 			case "ID":
 				varNode = var(); match("="); exprNode = expr(); 
 				return syntaxTree.makeInterior("=", varNode, exprNode);
 			case "if":
-				match("if"); bexprNode = bexpr(); match("then"); seqNode = statement_seq(); elseNode = opt_else(); match("fi");
+				match("if"); bexprNode = bexpr(); match("then"); statement_seq(statements); elseNode = opt_else(); match("fi");
 				
 				if (elseNode != null)
-					return syntaxTree.makeInterior("if", bexprNode, seqNode, elseNode);
+					return syntaxTree.makeInterior("if", bexprNode, statements, elseNode);
 				else
-					return syntaxTree.makeInterior("if", bexprNode, seqNode);
+					return syntaxTree.makeInterior("if", bexprNode, statements);
 			case "while":
-				match("while"); bexprNode = bexpr(); match("do"); seqNode = statement_seq(); match("od");
-				return syntaxTree.makeInterior("while", bexprNode, seqNode);
+				match("while"); bexprNode = bexpr(); match("do"); statement_seq(statements); match("od");
+				return syntaxTree.makeInterior("while", bexprNode, statements);
 			case "print":
 				match("print"); exprNode = expr();
 				return syntaxTree.makeInterior("print", exprNode);
@@ -249,10 +269,12 @@ public class Parser {
 
 	public void varlist() {
 		String first = checkFIRST("varlist");
+		
 		if (first != null) {
 			var(); varlist_r();
-		} else
+		} else {
 			error();
+		}
 	}
 	
 	public void varlist_r() {
@@ -262,106 +284,182 @@ public class Parser {
 		}
 	}
 	
-	public void opt_else() {
+	public SyntaxTreeNode opt_else() {
 		String first = checkFIRST("opt_else");
+	
 		if (first != null) {
-			match("else"); statement_seq();
+			SyntaxTreeNode.Interior statements = syntaxTree.makeInterior("statement_seq");
+			match("else"); statement_seq(statements);
+			return statements;
+		} else {
+			return null;
 		}
 	}
 	
 	public SyntaxTreeNode expr()
 	{
 		String first = checkFIRST("expr");
-		if (first != null) {
-			term(); term_r();
-		} else
-			error();
-	}
-	
-	public void term_r() {
-		String first = checkFIRST("term_r");
+		SyntaxTreeNode termNode, term_rNode;
 		
 		if (first != null) {
-			if (first.equals("+")) {
-				match("+"); term(); term_r();
-			} else if (first.equals("-")) {
-				match("-"); term(); term_r();
-			} else
-				error();
+			termNode = term(); term_rNode = term_r();
+			
+			if (termNode != null)
+			{
+				if (termNode instanceof SyntaxTreeNode.Interior)
+					((SyntaxTreeNode.Interior)termNode).addChild(term_rNode);
+				return termNode;
+			}
+			else
+			{
+				return null;
+			}
+		} else {
+			error();
+			return null;
 		}
 	}
 	
-	public void term() {
-		String first = checkFIRST("term");
+	public SyntaxTreeNode term_r() {
+		String first = checkFIRST("term_r");
+		SyntaxTreeNode termNode, term_rNode;
 		
 		if (first != null) {
-			factor(); factor_r();
-		} else
-			error();
+			if (first.equals("+")) {
+				match("+"); termNode = term(); term_rNode = term_r();
+				return syntaxTree.makeInterior("+", termNode, term_rNode);
+			} else if (first.equals("-")) {
+				match("-"); termNode = term(); term_rNode = term_r();
+				return syntaxTree.makeInterior("-", termNode, term_rNode);
+			} else {
+				error();
+				return null;
+			}
+		} else {
+			return null;
+		}
 	}
 	
-	public void factor_r() {
+	public SyntaxTreeNode term() {
+		String first = checkFIRST("term");
+		SyntaxTreeNode factorNode, factor_rNode;
+		
+		if (first != null) {
+			factorNode = factor(); factor_rNode = factor_r();
+			
+			if (factorNode != null)
+			{
+				if (factorNode instanceof SyntaxTreeNode.Interior)
+					((SyntaxTreeNode.Interior)factorNode).addChild(factor_rNode);
+				return factorNode;
+			}
+			else
+			{
+				return null;
+			}
+		} else {
+			error();
+			return null;
+		}
+	}
+	
+	public SyntaxTreeNode factor_r() {
 		String first = checkFIRST("factor_r");
+		SyntaxTreeNode factorNode, factor_rNode;
+		
 		if (first != null) {
 			switch(first) {
 				case "*":
-					match("*"); factor(); factor_r(); return;
+					match("*"); factorNode = factor(); factor_rNode = factor_r(); 
+					return syntaxTree.makeInterior("*", factorNode, factor_rNode);
 				case "/":
-					match("/"); factor(); factor_r(); return;
+					match("/"); factorNode = factor(); factor_rNode = factor_r(); 
+					return syntaxTree.makeInterior("/", factorNode, factor_rNode);
 				case "%":
-					match("%"); factor(); factor_r(); return;
+					match("%"); factorNode = factor(); factor_rNode = factor_r(); 
+					return syntaxTree.makeInterior("%", factorNode, factor_rNode);
 				default:
 					error();
+					return null;
 			}
+		} else {
+			return null;
 		}
 	}
 	
 	// Careful
-	 public void factor() {
+	 public SyntaxTreeNode factor() {
 		String first = checkFIRST("factor");
+		SyntaxTreeNode exprNode, idNode, funcParams;
+		
 		if (first != null) {
-			if (first.equals("ID")) {
-				match(TokenType.ID); factor_r_p();
+			if (first.equals("ID")) { // Either a function call or a variable usage
+				idNode = match(TokenType.ID); funcParams = factor_r_p();
+				
+				if (funcParams != null) {
+					return syntaxTree.makeInterior(idNode.toString(), funcParams);
+				} else {
+					return idNode;
+				}
 			} else if (first.equals("NUMBER")) {
-				match(TokenType.DOUBLE); //Technically INT too
+				return match(TokenType.DOUBLE); //Technically INT too
 			} else if (first.equals("(")) {
-				match("("); expr(); match(")");
+				match("("); exprNode = expr(); match(")");
+				return exprNode;
 			} else if (first.equals("ID")) {
-				var();
-			} else
+				return var();
+			} else {
 				error();
+				return null;
+			}
 		} else {
 			error();
+			return null;
 		}
 	}
  
-	public void factor_r_p() {
+	public SyntaxTreeNode factor_r_p() {
 		String first = checkFIRST("factor_r_p");
 		if (first != null) {
 			if (first.equals("(")) {
-				match("("); exprseq(); match(")");
+				SyntaxTreeNode.Interior params = syntaxTree.makeInterior("params");
+				match("("); exprseq(params); match(")");
+				return params;
+			} else {
+				return null;
 			}
+		} else {
+			return null;
 		}
 	}
 	
-	public void exprseq() {
+	public void exprseq(SyntaxTreeNode.Interior params) {
 		String first = checkFIRST("exprseq");
+		SyntaxTreeNode exprNode;
 		if (first != null) {
-			expr(); exprseq_r();
+			exprNode = expr(); 
+			params.addChild(exprNode);
+			exprseq_r(params);
 		}
 	}
 	
-	public void exprseq_r() {
+	public void exprseq_r(SyntaxTreeNode.Interior params) {
 		String first = checkFIRST("exprseq_r");
 		if (first != null) {
-			match(","); exprseq();
+			match(","); exprseq(params);
 		}
 	}
 	
-	public void bexpr() {
+	public SyntaxTreeNode bexpr() {
 		String first = checkFIRST("bexpr");
+		SyntaxTreeNode btermNode, bterm_rNode;
+		
 		if (first != null) {
-			bterm(); bterm_r();
+			btermNode = bterm(); bterm_rNode = bterm_r();
+			((SyntaxTreeNode.Interior)btermNode).addChild(bterm_rNode);
+			return btermNode;
+		} else {
+			return null;
 		}
 	}
 	
@@ -432,16 +530,20 @@ public class Parser {
 			return compNode;
 		} else if (FIRST.get("bfactor_r_p").contains(first)) {
 			return bexpr();
-		} else 
+		} else {
 			error();
+			return null;
+		}
 	}
 	
 	public SyntaxTreeNode comp() {
 		String first = checkFIRST("comp");
 		if (first != null) {
 			return match(TokenType.COMP);
-		} else
+		} else {
 			error();
+			return null;
+		}
 	}
 	
 	public SyntaxTreeNode var() {
@@ -479,6 +581,7 @@ public class Parser {
 		lookahead = token;
 		try {
 			if (token == null || (token != null && token.getType() != TokenType.END)) {
+				lookahead = token;
 				token = lex.getNextToken();
 			}
 		} catch (IOException e) {
@@ -538,38 +641,12 @@ public class Parser {
 		} else if (type == TokenType.ID){
 			isMatch = true;
 			
-			if (currentFuncName != null)
-			{
-				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), SymbolTableTree.getInstance().getEntry(lookahead.getRepresentation(), currentFuncName));
-			}
-			else
-			{
-				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), SymbolTableTree.getInstance().getEntry(lookahead.getRepresentation()));
-			}
+			node = syntaxTree.makeLeaf(lookahead.getRepresentation(), null);
 		} else if (type == TokenType.COMP){
 			isMatch = true;
 			node = syntaxTree.makeInterior(lookahead.getRepresentation());
 		} else {
 			isMatch = type == lookahead.getType();
-			
-			switch(lookahead.getRepresentation())
-			{
-				case "+":
-					node = syntaxTree.makeInterior("+");
-					break;
-				case "-":
-					node = syntaxTree.makeInterior("-");
-					break;
-				case "*":
-					node = syntaxTree.makeInterior("*");
-					break;
-				case "/":
-					node = syntaxTree.makeInterior("/");
-					break;
-				case "%":
-					node = syntaxTree.makeInterior("%");
-					break;
-			}
 		}
 
 		if (isMatch)
@@ -584,8 +661,8 @@ public class Parser {
 	public void error() {
 		System.out.println("\nValid Parse: false");
 		System.out.println("Error on Line " + lex.getLineNum() + " at token " + lookahead.getRepresentation());
-		//StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-		//System.out.println(Arrays.toString(stackTraceElements));
+		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+		System.out.println(Arrays.toString(stackTraceElements));
 		System.exit(0);
 	}
 }
