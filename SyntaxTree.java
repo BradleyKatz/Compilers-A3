@@ -69,8 +69,8 @@ public class SyntaxTree
 	
 	public static void main(String args[])
 	{
-		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("x", SymbolTableEntry.FUNCTION, SymbolTableEntry.INT, null));
-		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("i", SymbolTableEntry.FUNCTION, SymbolTableEntry.INT, null));
+		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("x", SymbolTableEntry.VARIABLE, SymbolTableEntry.INT, null));
+		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("i", SymbolTableEntry.VARIABLE, SymbolTableEntry.INT, null));
 		
 		SyntaxTree tree = SyntaxTree.getInstance();
 		
@@ -96,7 +96,7 @@ public class SyntaxTree
 		
 		SyntaxTreeNode.Interior i7 = tree.makeInterior("while", i3, i6);
 		
-		SyntaxTreeNode.Leaf l11 = tree.makeLeaf("x", SymbolTableTree.getInstance().getEntry("x"));
+		SyntaxTreeNode.Leaf l11 = tree.makeLeaf("i", SymbolTableTree.getInstance().getEntry("i"));
 		SyntaxTreeNode.Interior i8 = tree.makeInterior("print", l11);
 		
 		SyntaxTreeNode.Interior i9 = tree.makeInterior("statements", i1, i2, i7, i8);
