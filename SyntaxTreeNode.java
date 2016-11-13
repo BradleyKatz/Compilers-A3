@@ -30,7 +30,7 @@ public class SyntaxTreeNode
 		{
 			super(inputOp);
 			this.children = new ArrayList<SyntaxTreeNode>();
-			
+					
 			for (SyntaxTreeNode currentChild : inputChildren)
 			{
 				if (currentChild != null)

@@ -106,13 +106,8 @@ public class SyntaxTree
 		
 		SyntaxTreeNode.Interior i9 = tree.makeInterior("statements", i1, i2, i7, i8);
 		
-		LinkedList<SyntaxTreeNode> testList = tree.getTraversalList();
-		
-		while (testList.size() > 0)
-		{
-			System.out.println(testList.getLast());
-			testList.removeLast();
-		}
+		Interpreter interpreter = new Interpreter(tree);
+		interpreter.interpret();
 	}
 	*/
 }
