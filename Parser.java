@@ -144,8 +144,6 @@ public class Parser {
 			SyntaxTreeNode.Interior currentFuncRoot = currentFuncBody.makeInterior("statement_seq");
 			
 			match("def"); type(); fname(); match("("); params(); match(")"); declarations(); statement_seq(currentFuncRoot); match("fed");
-			
-			currentFuncBody = null;
 		}
 	}
 	
@@ -418,7 +416,9 @@ public class Parser {
 					match("*"); factorNode = factor(); factor_rNode = factor_r();
 
 					if (currentFuncBody == null)
+					{
 						return syntaxTree.makeInterior("*", factorNode, factor_rNode);
+					}
 					else
 						return currentFuncBody.makeInterior("*", factorNode, factor_rNode);
 				case "/":
@@ -702,6 +702,7 @@ public class Parser {
 			{
 				SymbolTableTree.getInstance().updateValue(currentFuncName, currentFuncBody);
 				currentFuncName = null;
+				currentFuncBody = null;
 			}
 			consumeToken();
 		}
@@ -735,7 +736,11 @@ public class Parser {
 				node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), null);
 		} else if (type == TokenType.COMP){
 			isMatch = true;
-			node = syntaxTree.makeInterior(lookahead.getRepresentation());
+			
+			if (currentFuncBody == null)
+				node = syntaxTree.makeInterior(lookahead.getRepresentation());
+			else
+				node = currentFuncBody.makeInterior(lookahead.getRepresentation());
 		} else {
 			isMatch = type == lookahead.getType();
 		}
