@@ -1,9 +1,30 @@
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Stack;
 
 public class Interpreter {
 	private SyntaxTree intermediate;
 	private Stack runtimeStack = new Stack();
+	
+	// Only handles INTs, not DOUBLEs, and doesn't handle functions
+	// Passes Test1.txt and Test2.txt (with b=1r5 corrected)
+	public static void main(String[] args) throws IOException {
+		Parser parser = new Parser();
+		parser.program();
+		
+	//	System.out.println("\nValid Parse: true");
+	//	System.out.println("");
+	//	SymbolTableTree.getInstance().printSymbolTables();
+	
+		LinkedList<SyntaxTreeNode> treeList = parser.syntaxTree.getTraversalList();
+		
+		System.out.println("");
+		System.out.println("Syntax Tree Traversal List: " + treeList);
+		
+		System.out.println("Interpretation: ");
+		Interpreter interpreter = new Interpreter(parser.syntaxTree);
+		interpreter.interpret();
+	}
 	
 	public Interpreter(SyntaxTree tree) {
 		 intermediate = tree;
@@ -199,23 +220,23 @@ public class Interpreter {
 	}
 	
 	public int add(int x, int y) {
-		return x + y;
+		return y + x;
 	}
 	
 	public int sub(int x, int y) {
-		return x - y;
+		return y - x;
 	}
 	
 	public int mul(int x, int y) {
-		return x * y;
+		return y * x;
 	}
 
 	public int div(int x, int y) {
-		return x / y;
+		return y / x;
 	}
 	
 	public int mod(int x, int y) {
-		return x % y;
+		return y % x;
 	}
 	
 	public void print(int x) {

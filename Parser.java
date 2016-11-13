@@ -93,25 +93,6 @@ public class Parser {
         FOLLOW.put("factor_r_p", Arrays.asList(".",";","fed","fi","od","else",")","=",">","<","]","+","-","*","/"));
 	}
 	
-	// Calls Parser
-	public static void main(String[] args) throws IOException {
-		Parser parser = new Parser();
-		parser.program();
-		
-	//	System.out.println("\nValid Parse: true");
-	//	System.out.println("");
-	//	SymbolTableTree.getInstance().printSymbolTables();
-	
-		LinkedList<SyntaxTreeNode> treeList = parser.syntaxTree.getTraversalList();
-		
-		System.out.println("");
-		System.out.println("Syntax Tree Traversal List: " + treeList);
-		
-		System.out.println("Interpretation: ");
-		Interpreter interpreter = new Interpreter(parser.syntaxTree);
-		interpreter.interpret();
-	}
-	
 	public Parser() throws IOException {
 		initializeFIRST();
 		initializeFOLLOW();
@@ -485,7 +466,7 @@ public class Parser {
 					return idNode;
 				}
 			} else if (first.equals("NUMBER")) {
-				return match(TokenType.DOUBLE); //Technically INT too
+				return match(TokenType.INT); //Technically INT too
 			} else if (first.equals("(")) {
 				match("("); exprNode = expr(); match(")");
 				return exprNode;
@@ -754,9 +735,10 @@ public class Parser {
 			isMatch = true;
 			
 			if (currentFuncBody == null)
-				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), null);
+
+				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), SymbolTableTree.getInstance().getEntry(lookahead.getRepresentation()));
 			else
-				node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), null);
+				node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), SymbolTableTree.getInstance().getEntry(lookahead.getRepresentation()));
 		} else if (type == TokenType.COMP){
 			isMatch = true;
 			
