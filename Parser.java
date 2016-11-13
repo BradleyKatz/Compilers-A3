@@ -102,11 +102,12 @@ public class Parser {
 	//	System.out.println("");
 	//	SymbolTableTree.getInstance().printSymbolTables();
 	
-		LinkedList<SyntaxTreeNode> testList = parser.syntaxTree.getTraversalList();
+		LinkedList<SyntaxTreeNode> treeList = parser.syntaxTree.getTraversalList();
 		
 		System.out.println("");
-		System.out.println(testList);
+		System.out.println("Syntax Tree Traversal List: " + treeList);
 		
+		System.out.println("Interpretation: ");
 		Interpreter interpreter = new Interpreter(parser.syntaxTree);
 		interpreter.interpret();
 	}

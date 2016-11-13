@@ -198,10 +198,6 @@ public class Interpreter {
 		SymbolTableTree.getInstance().updateValue(x, val);
 	}
 	
-	public void assign(String x, double val) {
-		SymbolTableTree.getInstance().updateValue(x, val);
-	}
-	
 	public int add(int x, int y) {
 		return x + y;
 	}

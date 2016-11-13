@@ -33,7 +33,7 @@ public class Lexer {
 	// Read Input 1 character at a time
 	void readchar() throws IOException {
 		next = (char)System.in.read();
-		System.out.print(next);
+		//System.out.print(next);
 	}
 	
 	// Helps identify 2 character terminals
