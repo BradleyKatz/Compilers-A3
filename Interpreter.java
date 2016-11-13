@@ -26,7 +26,8 @@ public class Interpreter {
 			
 			if (node.toString().equals("=")) {
 				process(interior.getChild(1));
-				assign(interior.getChild(0).toString(), (int)interior.getChild(1).getValue());
+				int right = resolve(interior.getChild(1));
+				assign(interior.getChild(0).toString(), right);
 			}
 			
 			if (node.toString().equals("+")) {
@@ -53,15 +54,19 @@ public class Interpreter {
 //				div(interior.getChild(0).toString(), process(interior.getChild(1)));
 //			}
 //			
-//			if (node.toString().equals("%")) {
-//				mod(interior.getChild(0).toString(), process(interior.getChild(1)));
-//			}
-//			
+			if (node.toString().equals("%")) {
+				process(interior.getChild(0));
+				process(interior.getChild(1));
+				int left = resolve(interior.getChild(0));
+				int right = resolve(interior.getChild(1));
+				node.setValue(mod(left, right));
+			}
+			
 			if (node.toString().equals("while")) {
 				process(interior.getChild(0));
 				while ((boolean)interior.getChild(0).getValue() == true) {
-					System.out.println(interior.getChild(0).getValue());
-					process(interior.getChild(1));
+					statement_seq((SyntaxTreeNode.Interior)interior.getChild(1));
+					process(interior.getChild(0));
 				}
 			}
 //			
@@ -84,6 +89,17 @@ public class Interpreter {
 				int left = resolve(interior.getChild(0));
 				int right = resolve(interior.getChild(1));
 				if (left < right)
+					interior.setValue(true);
+				else
+					interior.setValue(false);
+			}
+			
+			if (node.toString().equals("<>")) {
+				process(interior.getChild(0));
+				process(interior.getChild(1));
+				int left = resolve(interior.getChild(0));
+				int right = resolve(interior.getChild(1));
+				if (left != right)
 					interior.setValue(true);
 				else
 					interior.setValue(false);
