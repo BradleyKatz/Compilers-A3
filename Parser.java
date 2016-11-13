@@ -104,11 +104,14 @@ public class Parser {
 	
 		LinkedList<SyntaxTreeNode> testList = parser.syntaxTree.getTraversalList();
 		
-		while (testList.size() > 0)
-		{
-			System.out.println(testList.getLast());
-			testList.removeLast();
-		}
+	//	while (testList.size() > 0)
+	//	{
+	//		System.out.println(testList.getLast());
+	//		testList.removeLast();
+	//	}
+	
+		System.out.println("");
+		System.out.println("Syntax Tree Traversal List: " + testList);
 	}
 	
 	public Parser() throws IOException {
@@ -248,7 +251,7 @@ public class Parser {
 		switch(first) {
 			case "ID":
 				varNode = var(); match("="); exprNode = expr();
-
+				
 				if (currentFuncBody == null)
 					return syntaxTree.makeInterior("=", varNode, exprNode);
 				else
@@ -341,9 +344,15 @@ public class Parser {
 			
 			if (termNode != null)
 			{
-				if (termNode instanceof SyntaxTreeNode.Interior)
-					((SyntaxTreeNode.Interior)termNode).addChild(term_rNode);
-				return termNode;
+				if (term_rNode instanceof SyntaxTreeNode.Interior)
+				{
+					((SyntaxTreeNode.Interior)term_rNode).addChild(termNode);
+					return term_rNode;
+				}
+				else
+				{
+					return termNode;
+				}
 			}
 			else
 			{
@@ -363,8 +372,9 @@ public class Parser {
 			if (first.equals("+")) {
 				match("+"); termNode = term(); term_rNode = term_r();
 				
-				if (currentFuncBody == null)
+				if (currentFuncBody == null){
 					return syntaxTree.makeInterior("+", termNode, term_rNode);
+				}
 				else
 					return currentFuncBody.makeInterior("+", termNode, term_rNode);
 			} else if (first.equals("-")) {
@@ -393,8 +403,23 @@ public class Parser {
 			if (factorNode != null)
 			{
 				if (factorNode instanceof SyntaxTreeNode.Interior)
+				{
 					((SyntaxTreeNode.Interior)factorNode).addChild(factor_rNode);
-				return factorNode;
+					return factorNode;
+				}
+				else if (factorNode instanceof SyntaxTreeNode.Leaf && factor_rNode != null)
+				{
+					((SyntaxTreeNode.Interior)factor_rNode).addChild(factorNode);
+					return factor_rNode;
+				}
+				else if (factorNode == null && factor_rNode != null)
+				{
+					return factor_rNode;
+				}
+				else
+				{
+					return factorNode;
+				}
 			}
 			else
 			{
