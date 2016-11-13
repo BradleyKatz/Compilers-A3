@@ -154,15 +154,18 @@ public class SyntaxTree
 		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("s", SymbolTableEntry.VARIABLE, SymbolTableEntry.INT, null));
 		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("f", SymbolTableEntry.FUNCTION, SymbolTableEntry.INT, null));
 		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("a", SymbolTableEntry.VARIABLE, SymbolTableEntry.INT, null), "f");
-
+		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("x", SymbolTableEntry.VARIABLE, SymbolTableEntry.INT, null), "f");
+		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("y", SymbolTableEntry.VARIABLE, SymbolTableEntry.INT, null), "f");
+		
 		//f
-		SyntaxTreeNode.Leaf l1 = tree.makeLeaf("d", SymbolTableTree.getInstance().getEntry("s"));
-		SyntaxTreeNode.Leaf l2 = tree.makeLeaf("f", SymbolTableTree.getInstance().getEntry("f"));
-		SyntaxTreeNode.Leaf l3 = tree.makeLeaf("f", SymbolTableTree.getInstance().getEntry("f"));
-		SyntaxTreeNode.Leaf l4 = tree.makeLeaf("f", SymbolTableTree.getInstance().getEntry("f"));
-		SyntaxTreeNode.Interior i1 = tree.makeInterior("+", l3, l4);
-		SyntaxTreeNode.Interior i2 = tree.makeInterior("+", l2, i1);
-		SyntaxTreeNode.Interior i3 = tree.makeInterior("=", l1, i2);
+		SyntaxTreeNode.Leaf fl1 = tree.makeLeaf("a", SymbolTableTree.getInstance().getEntry("a"));
+		SyntaxTreeNode.Leaf fl2 = tree.makeLeaf("y", SymbolTableTree.getInstance().getEntry("y"));
+		SyntaxTreeNode.Leaf fl3 = tree.makeLeaf("y", SymbolTableTree.getInstance().getEntry("y"));
+		SyntaxTreeNode.Leaf fl4 = tree.makeLeaf("x", SymbolTableTree.getInstance().getEntry("x"));
+		SyntaxTreeNode.Interior fi1 = tree.makeInterior("*", fl2, fl3);
+		SyntaxTreeNode.Interior fi2 = tree.makeInterior("+", fi1, fl4);
+		SyntaxTreeNode.Interior fi3 = tree.makeInterior("=", fl1, fi2);
+		SyntaxTreeNode.Interior fi4 = tree.makeInterior("statements", fi3);
 		//
 		
 		SyntaxTreeNode.Leaf l1 = tree.makeLeaf("s", SymbolTableTree.getInstance().getEntry("s"));
