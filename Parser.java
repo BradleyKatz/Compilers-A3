@@ -8,13 +8,13 @@ import java.util.ArrayList;
 public class Parser {
 	private Lexer lex = new Lexer();
 	public SyntaxTree syntaxTree = new SyntaxTree();
-	public ArrayList<FunctionTreeNode> subtrees = new ArrayList<FunctionTreeNode>();
 	private Token lookahead = null;
 	private Token token = null;
 	private static Hashtable<String, List<String>> FIRST = new Hashtable<String, List<String>>();
 	private static Hashtable<String, List<String>> FOLLOW = new Hashtable<String, List<String>>();
 
 	private String currentName, currentFuncName, currentType, currentValue;
+	private SyntaxTree currentFuncBody = null;
 	
 	private void initializeFIRST() {
         FIRST.put("program", Arrays.asList("def", "int", "double", "if", "while", "print", "return", "ID"));
@@ -140,12 +140,12 @@ public class Parser {
 	public void fdec() {
 		String first = checkFIRST("fdec");
 		if(first != null) {
-			SyntaxTree currentFuncBody = new SyntaxTree();
+			currentFuncBody = new SyntaxTree();
 			SyntaxTreeNode.Interior currentFuncRoot = currentFuncBody.makeInterior("statement_seq");
 			
 			match("def"); type(); fname(); match("("); params(); match(")"); declarations(); statement_seq(currentFuncRoot); match("fed");
 			
-			subtrees.add(new FunctionTreeNode(currentFuncName, currentFuncBody));
+			currentFuncBody = null;
 		}
 	}
 	
@@ -240,28 +240,59 @@ public class Parser {
 	public SyntaxTreeNode statement() {
 		String first = checkFIRST("statement");
 		SyntaxTreeNode varNode, exprNode, bexprNode, elseNode;
-		SyntaxTreeNode.Interior statements = syntaxTree.makeInterior("statement_seq");
+		SyntaxTreeNode.Interior statements;
+		
+		if (currentFuncBody == null)
+			statements = syntaxTree.makeInterior("statement_seq");
+		else
+			statements = currentFuncBody.makeInterior("statement_seq");
 		
 		switch(first) {
 			case "ID":
-				varNode = var(); match("="); exprNode = expr(); 
-				return syntaxTree.makeInterior("=", varNode, exprNode);
+				varNode = var(); match("="); exprNode = expr();
+
+				if (currentFuncBody == null)
+					return syntaxTree.makeInterior("=", varNode, exprNode);
+				else
+					return currentFuncBody.makeInterior("=", varNode, exprNode);
 			case "if":
 				match("if"); bexprNode = bexpr(); match("then"); statement_seq(statements); elseNode = opt_else(); match("fi");
 				
 				if (elseNode != null)
-					return syntaxTree.makeInterior("if", bexprNode, statements, elseNode);
+				{
+					if (currentFuncBody == null)
+						return syntaxTree.makeInterior("if", bexprNode, statements, elseNode);
+					else
+						return currentFuncBody.makeInterior("if", bexprNode, statements, elseNode);
+				}
 				else
-					return syntaxTree.makeInterior("if", bexprNode, statements);
+				{
+					if (currentFuncBody == null)
+						return syntaxTree.makeInterior("if", bexprNode, statements);
+					else
+						return currentFuncBody.makeInterior("if", bexprNode, statements);
+				}
 			case "while":
 				match("while"); bexprNode = bexpr(); match("do"); statement_seq(statements); match("od");
-				return syntaxTree.makeInterior("while", bexprNode, statements);
+				
+				if (currentFuncBody == null)
+					return syntaxTree.makeInterior("while", bexprNode, statements);
+				else
+					return currentFuncBody.makeInterior("while", bexprNode, statements);
 			case "print":
 				match("print"); exprNode = expr();
-				return syntaxTree.makeInterior("print", exprNode);
+				
+				if (currentFuncBody == null)
+					return syntaxTree.makeInterior("print", exprNode);
+				else
+					return currentFuncBody.makeInterior("print", exprNode);
 			case "return":
 				match("return"); exprNode = expr();
-				return syntaxTree.makeInterior("return", exprNode);
+				
+				if (currentFuncBody == null)
+					return syntaxTree.makeInterior("return", exprNode);
+				else
+					return currentFuncBody.makeInterior("return", exprNode);
 			default: //Epsilon
 				return null;
 		}
@@ -288,7 +319,13 @@ public class Parser {
 		String first = checkFIRST("opt_else");
 	
 		if (first != null) {
-			SyntaxTreeNode.Interior statements = syntaxTree.makeInterior("statement_seq");
+			SyntaxTreeNode.Interior statements;
+			
+			if (currentFuncBody == null)
+				statements = syntaxTree.makeInterior("statement_seq");
+			else
+				statements = currentFuncBody.makeInterior("statement_seq");
+			
 			match("else"); statement_seq(statements);
 			return statements;
 		} else {
@@ -327,10 +364,18 @@ public class Parser {
 		if (first != null) {
 			if (first.equals("+")) {
 				match("+"); termNode = term(); term_rNode = term_r();
-				return syntaxTree.makeInterior("+", termNode, term_rNode);
+				
+				if (currentFuncBody == null)
+					return syntaxTree.makeInterior("+", termNode, term_rNode);
+				else
+					return currentFuncBody.makeInterior("+", termNode, term_rNode);
 			} else if (first.equals("-")) {
 				match("-"); termNode = term(); term_rNode = term_r();
-				return syntaxTree.makeInterior("-", termNode, term_rNode);
+				
+				if (currentFuncBody == null)
+					return syntaxTree.makeInterior("-", termNode, term_rNode);
+				else
+					return currentFuncBody.makeInterior("-", termNode, term_rNode);
 			} else {
 				error();
 				return null;
@@ -370,14 +415,26 @@ public class Parser {
 		if (first != null) {
 			switch(first) {
 				case "*":
-					match("*"); factorNode = factor(); factor_rNode = factor_r(); 
-					return syntaxTree.makeInterior("*", factorNode, factor_rNode);
+					match("*"); factorNode = factor(); factor_rNode = factor_r();
+
+					if (currentFuncBody == null)
+						return syntaxTree.makeInterior("*", factorNode, factor_rNode);
+					else
+						return currentFuncBody.makeInterior("*", factorNode, factor_rNode);
 				case "/":
-					match("/"); factorNode = factor(); factor_rNode = factor_r(); 
-					return syntaxTree.makeInterior("/", factorNode, factor_rNode);
+					match("/"); factorNode = factor(); factor_rNode = factor_r();
+
+					if (currentFuncBody == null)
+						return syntaxTree.makeInterior("/", factorNode, factor_rNode);
+					else
+						return currentFuncBody.makeInterior("/", factorNode, factor_rNode);
 				case "%":
-					match("%"); factorNode = factor(); factor_rNode = factor_r(); 
-					return syntaxTree.makeInterior("%", factorNode, factor_rNode);
+					match("%"); factorNode = factor(); factor_rNode = factor_r();
+
+					if (currentFuncBody == null)
+						return syntaxTree.makeInterior("%", factorNode, factor_rNode);
+					else
+						return currentFuncBody.makeInterior("%", factorNode, factor_rNode);
 				default:
 					error();
 					return null;
@@ -397,7 +454,10 @@ public class Parser {
 				idNode = match(TokenType.ID); funcParams = factor_r_p();
 				
 				if (funcParams != null) {
-					return syntaxTree.makeInterior(idNode.toString(), funcParams);
+					if (currentFuncBody == null)
+						return syntaxTree.makeInterior(idNode.toString(), funcParams);
+					else
+						return currentFuncBody.makeInterior(idNode.toString(), funcParams);
 				} else {
 					return idNode;
 				}
@@ -422,7 +482,13 @@ public class Parser {
 		String first = checkFIRST("factor_r_p");
 		if (first != null) {
 			if (first.equals("(")) {
-				SyntaxTreeNode.Interior params = syntaxTree.makeInterior("params");
+				SyntaxTreeNode.Interior params;
+				
+				if (currentFuncBody == null)
+					params = syntaxTree.makeInterior("params");
+				else
+					params = currentFuncBody.makeInterior("params");
+				
 				match("("); exprseq(params); match(")");
 				return params;
 			} else {
@@ -469,7 +535,11 @@ public class Parser {
 		
 		if (first != null) {
 			match("or"); btermNode = bterm(); bterm_rNode = bterm_r();
-			return syntaxTree.makeInterior("or", btermNode, bterm_rNode);
+			
+			if (currentFuncBody == null)
+				return syntaxTree.makeInterior("or", btermNode, bterm_rNode);
+			else
+				return currentFuncBody.makeInterior("or", btermNode, bterm_rNode);
 		}
 		else{
 			return null;
@@ -495,7 +565,11 @@ public class Parser {
 		
 		if (first != null) {
 			match("and"); bfactorNode = bfactor(); bfactor_rNode = bfactor_r();
-			return syntaxTree.makeInterior("and", bfactorNode, bfactor_rNode);
+			
+			if (currentFuncBody == null)
+				return syntaxTree.makeInterior("and", bfactorNode, bfactor_rNode);
+			else
+				return currentFuncBody.makeInterior("and", bfactorNode, bfactor_rNode);
 		} else {
 			return null;
 		}
@@ -511,7 +585,11 @@ public class Parser {
 				return bfactor_r_p_node;
 			case "not":
 				match("not"); bfactorNode = bfactor();
-				return syntaxTree.makeInterior("not", bfactorNode);
+				
+				if (currentFuncBody == null)
+					return syntaxTree.makeInterior("not", bfactorNode);
+				else
+					return currentFuncBody.makeInterior("not", bfactorNode);
 			default:
 				error();
 				return null;
@@ -621,8 +699,10 @@ public class Parser {
 		if (isMatch) 
 		{
 			if (s.equals("fed"))
+			{
+				SymbolTableTree.getInstance().updateValue(currentFuncName, currentFuncBody);
 				currentFuncName = null;
-			
+			}
 			consumeToken();
 		}
 		else error();
@@ -634,14 +714,25 @@ public class Parser {
 
 		if (type == TokenType.INT) { 
 			isMatch = true;
-			node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
+			
+			if (currentFuncBody == null)
+				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
+			else
+				node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
 		} else if (type == TokenType.DOUBLE) {
 			isMatch = true;
-			node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
+			
+			if (currentFuncBody == null)
+				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
+			else
+				node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
 		} else if (type == TokenType.ID){
 			isMatch = true;
 			
-			node = syntaxTree.makeLeaf(lookahead.getRepresentation(), null);
+			if (currentFuncBody == null)
+				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), null);
+			else
+				node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), null);
 		} else if (type == TokenType.COMP){
 			isMatch = true;
 			node = syntaxTree.makeInterior(lookahead.getRepresentation());
