@@ -2,7 +2,6 @@ import java.util.*;
 
 public class SyntaxTree
 {
-	private static SyntaxTree instance = null;
 	private static SyntaxTreeNode root = null;
 	private static LinkedList<SyntaxTreeNode> traversalList = null;
 	
@@ -61,14 +60,6 @@ public class SyntaxTree
 		{
 			return (LinkedList<SyntaxTreeNode>)traversalList.clone();
 		}
-	}
-	
-	public static SyntaxTree getInstance()
-	{
-		if (instance == null)
-			instance = new SyntaxTree();
-		
-		return instance;
 	}
 	
 	/*

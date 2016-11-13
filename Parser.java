@@ -3,10 +3,12 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class Parser {
 	private Lexer lex = new Lexer();
-	public SyntaxTree syntaxTree = SyntaxTree.getInstance();
+	public SyntaxTree syntaxTree = new SyntaxTree();
+	public ArrayList<FunctionTreeNode> subtrees = new ArrayList<FunctionTreeNode>();
 	private Token lookahead = null;
 	private Token token = null;
 	private static Hashtable<String, List<String>> FIRST = new Hashtable<String, List<String>>();
@@ -135,14 +137,15 @@ public class Parser {
 		}
 	}
 	
-	public SyntaxTreeNode fdec() { // Store function statements somewhere
+	public void fdec() {
 		String first = checkFIRST("fdec");
 		if(first != null) {
-			SyntaxTreeNode.Interior funcStatements = syntaxTree.makeInterior("statement_seq");
-			match("def"); type(); fname(); match("("); params(); match(")"); declarations(); statement_seq(funcStatements); match("fed");
-			return funcStatements;
-		} else {
-			return null;
+			SyntaxTree currentFuncBody = new SyntaxTree();
+			SyntaxTreeNode.Interior currentFuncRoot = currentFuncBody.makeInterior("statement_seq");
+			
+			match("def"); type(); fname(); match("("); params(); match(")"); declarations(); statement_seq(currentFuncRoot); match("fed");
+			
+			subtrees.add(new FunctionTreeNode(currentFuncName, currentFuncBody));
 		}
 	}
 	
@@ -627,6 +630,9 @@ public class Parser {
 	}
 	
 	public void match(String s) {
+		System.out.println("Matching: " + s);
+		System.out.println("Lookahead: " + lookahead.getRepresentation());
+		System.out.println("Token: " + token.getRepresentation());
 		boolean isMatch = lookahead.getRepresentation().equals(s);
 		if (isMatch) 
 		{
@@ -671,8 +677,8 @@ public class Parser {
 	public void error() {
 		System.out.println("\nValid Parse: false");
 		System.out.println("Error on Line " + lex.getLineNum() + " at token " + lookahead.getRepresentation());
-		//StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-		//System.out.println(Arrays.toString(stackTraceElements));
+		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+		System.out.println(Arrays.toString(stackTraceElements));
 		System.exit(0);
 	}
 }
