@@ -9,7 +9,9 @@ public class SyntaxTree
 	public SyntaxTreeNode.Interior makeInterior(String op)
 	{
 		SyntaxTreeNode.Interior node = new SyntaxTreeNode.Interior(op);
-		root = node;
+		
+		if (root == null)
+			root = node;
 		
 		return node;
 	}
@@ -18,7 +20,9 @@ public class SyntaxTree
 	{
 		
 		SyntaxTreeNode.Interior node = new SyntaxTreeNode.Interior(op, children);
-		root = node;
+		
+		if (root == null)
+			root = node;
 		
 		return node;
 	}
@@ -67,6 +71,7 @@ public class SyntaxTree
 		return instance;
 	}
 	
+	/*
 	public static void main(String args[])
 	{
 		SymbolTableTree.getInstance().addEntry(new SymbolTableEntry("x", SymbolTableEntry.FUNCTION, SymbolTableEntry.INT, null));
@@ -109,4 +114,5 @@ public class SyntaxTree
 			testList.removeLast();
 		}
 	}
+	*/
 }
