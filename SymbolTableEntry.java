@@ -75,4 +75,9 @@ public class SymbolTableEntry<ValueType>
 		
 		return output;
 	}
+	
+	public String toStringValue()
+	{
+		return value.toString();
+	}	
 }

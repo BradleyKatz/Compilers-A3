@@ -1,9 +1,10 @@
 import java.util.*;
 
-public class SyntaxTreeNode
+public class SyntaxTreeNode <ValueType>
 {
 	private String op;
 	private SyntaxTreeNode parent = null;
+	private ValueType val; // Possible result of computation
 	
 	public SyntaxTreeNode(String inputOp)
 	{
@@ -15,8 +16,18 @@ public class SyntaxTreeNode
 		return this.op;
 	}
 	
+	public void setValue(ValueType val)
+	{
+		this.val = val;
+	}
+	
+	public ValueType getValue()
+	{
+		return this.val;
+	}
+	
 	// Models operators
-	public static class Interior extends SyntaxTreeNode
+	public static class Interior <ValueType> extends SyntaxTreeNode
 	{
 		private ArrayList<SyntaxTreeNode> children;
 		
@@ -60,17 +71,13 @@ public class SyntaxTreeNode
 	// Models operands
 	public static class Leaf<ValueType> extends SyntaxTreeNode
 	{
-		private ValueType val; // Lexical value of the operand
-		
+
 		public Leaf(String inputOp, ValueType inputVal)
 		{
 			super(inputOp);
-			this.val = inputVal;
+			this.setValue(inputVal);
 		}
 		
-		public ValueType getValue()
-		{
-			return this.val;
-		}
 	}
+
 }

@@ -422,9 +422,9 @@ public class Parser {
 		String first = checkFIRST("factor_r_p");
 		if (first != null) {
 			if (first.equals("(")) {
-				SyntaxTreeNode exprseqNode;
-				match("("); exprseqNode = exprseq(); match(")");
-				return exprseqNode;
+				SyntaxTreeNode.Interior params = syntaxTree.makeInterior("params");
+				match("("); exprseq(params); match(")");
+				return params;
 			} else {
 				return null;
 			}
@@ -433,34 +433,20 @@ public class Parser {
 		}
 	}
 	
-	public SyntaxTreeNode exprseq() {
+	public void exprseq(SyntaxTreeNode.Interior params) {
 		String first = checkFIRST("exprseq");
 		SyntaxTreeNode exprNode;
-		
 		if (first != null) {
 			exprNode = expr(); 
-			
-			if (exprNode != null)
-			{
-				if (exprNode instanceof SyntaxTreeNode.Interior)
-					((SyntaxTreeNode.Interior)exprNode).addChild(exprseq_r());
-				return exprNode;
-			}
-			else
-			{
-				return null;
-			}
-		} else {
-			return null;
+			params.addChild(exprNode);
+			exprseq_r(params);
 		}
 	}
 	
-	public SyntaxTreeNode exprseq_r() {
+	public void exprseq_r(SyntaxTreeNode.Interior params) {
 		String first = checkFIRST("exprseq_r");
 		if (first != null) {
-			match(","); return exprseq();
-		} else {
-			return null;
+			match(","); exprseq(params);
 		}
 	}
 	
@@ -595,6 +581,7 @@ public class Parser {
 		lookahead = token;
 		try {
 			if (token == null || (token != null && token.getType() != TokenType.END)) {
+				lookahead = token;
 				token = lex.getNextToken();
 			}
 		} catch (IOException e) {
@@ -630,9 +617,6 @@ public class Parser {
 	}
 	
 	public void match(String s) {
-		System.out.println("Matching: " + s);
-		System.out.println("Lookahead: " + lookahead.getRepresentation());
-		System.out.println("Token: " + token.getRepresentation());
 		boolean isMatch = lookahead.getRepresentation().equals(s);
 		if (isMatch) 
 		{
