@@ -104,11 +104,11 @@ public class Parser {
 	
 		LinkedList<SyntaxTreeNode> testList = parser.syntaxTree.getTraversalList();
 		
-		while (testList.size() > 0)
-		{
-			System.out.println(testList.getLast());
-			testList.removeLast();
-		}
+		System.out.println("");
+		System.out.println(testList);
+		
+		Interpreter interpreter = new Interpreter(parser.syntaxTree);
+		interpreter.interpret();
 	}
 	
 	public Parser() throws IOException {
