@@ -2,7 +2,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Stack;
 
-public class Interpreter {
+public class Interpreter <ValueType> {
 	private SyntaxTree intermediate;
 	private Stack runtimeStack = new Stack();
 	
@@ -49,48 +49,48 @@ public class Interpreter {
 			
 			if (node.toString().equals("=")) {
 				process(interior.getChild(1));
-				int right = resolve(interior.getChild(1));
+				ValueType right = resolve(interior.getChild(1));
 				SymbolTableTree.getInstance().updateValue(interior.getChild(0).toString(), right);
 			}
 			
 			else if (node.toString().equals("+")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				node.setValue(right + left);
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				node.setValue(Number.operation("+", right, left));
 			}
 
 			else if (node.toString().equals("-")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				node.setValue(right - left);
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				node.setValue(Number.operation("-", right, left));
 			}			
 			
 			else if (node.toString().equals("*")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				node.setValue(right * left);
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				node.setValue(node.setValue(Number.operation("*", right, left)););
 			}
 	
 			else if (node.toString().equals("/")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				node.setValue(right / left);
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				node.setValue(node.setValue(Number.operation("/", right, left)););
 			}			
 
 			else if (node.toString().equals("%")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				node.setValue(right % left);
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				node.setValue(node.setValue(Number.operation("%", right, left)););
 			}
 			
 			else if (node.toString().equals("while")) {
@@ -112,16 +112,16 @@ public class Interpreter {
 			
 			else if (node.toString().equals("print")) {
 				process(interior.getChild(0));
-				int child = resolve(interior.getChild(0));
+				ValueType child = resolve(interior.getChild(0));
 				System.out.println(child);
 			}
 			
 			else if (node.toString().equals("<")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				if (left < right)
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				if (Number.comparison("<", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -130,9 +130,9 @@ public class Interpreter {
 			else if (node.toString().equals(">")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				if (left > right)
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				if (Number.comparison("<", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -141,9 +141,9 @@ public class Interpreter {
 			else if (node.toString().equals("<=")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				if (left <= right)
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				if (Number.comparison("<=", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -152,9 +152,9 @@ public class Interpreter {
 			else if (node.toString().equals(">=")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				if (left >= right)
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				if (Number.comparison(">=", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -163,9 +163,9 @@ public class Interpreter {
 			else if (node.toString().equals("==")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				if (left == right)
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				if (Number.comparison("==", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -174,9 +174,9 @@ public class Interpreter {
 			else if (node.toString().equals("<>")) {
 				process(interior.getChild(0));
 				process(interior.getChild(1));
-				int left = resolve(interior.getChild(0));
-				int right = resolve(interior.getChild(1));
-				if (left != right)
+				ValueType left = resolve(interior.getChild(0));
+				ValueType right = resolve(interior.getChild(1));
+				if (Number.comparison("<>", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -192,7 +192,7 @@ public class Interpreter {
 //					SyntaxTreeNode.Interior params = (SyntaxTreeNode.Interior) interior.getChild(0);
 //					System.out.println(entry);
 //					System.out.println(((SyntaxTree)entry.getValue()).getTraversalList());
-//					for (int i = 0; i < params.numChildren(); i++) {
+//					for (ValueType i = 0; i < params.numChildren(); i++) {
 //						runtimeStack.push(params.getChild(i));
 //						//SymbolTableTree.getInstance().updateValue(x, val, interior.toString());
 //					}
@@ -204,13 +204,14 @@ public class Interpreter {
 		}
 	}
 	
-	public int resolve(SyntaxTreeNode node) {
-		int value;
+	// Get value from node, whether it's Symbol Table value or Constant
+	public ValueType resolve(SyntaxTreeNode node) {
+		ValueType value;
 		if (node.getValue() instanceof SymbolTableEntry) {
 			String symbol = node.toString();
-			value = (int)SymbolTableTree.getInstance().getEntry(symbol).getValue();
+			value = (ValueType)SymbolTableTree.getInstance().getEntry(symbol).getValue();
 		} else {
-			value = (int)node.getValue();
+			value = (ValueType)node.getValue();
 		}
 		return value;
 	}
