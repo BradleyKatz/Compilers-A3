@@ -50,7 +50,7 @@ public class Interpreter {
 			if (node.toString().equals("=")) {
 				process(interior.getChild(1));
 				int right = resolve(interior.getChild(1));
-				assign(interior.getChild(0).toString(), right);
+				SymbolTableTree.getInstance().updateValue(interior.getChild(0).toString(), right);
 			}
 			
 			else if (node.toString().equals("+")) {
@@ -58,7 +58,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				int left = resolve(interior.getChild(0));
 				int right = resolve(interior.getChild(1));
-				node.setValue(add(left, right));
+				node.setValue(right + left);
 			}
 
 			else if (node.toString().equals("-")) {
@@ -66,7 +66,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				int left = resolve(interior.getChild(0));
 				int right = resolve(interior.getChild(1));
-				node.setValue(sub(left, right));
+				node.setValue(right - left);
 			}			
 			
 			else if (node.toString().equals("*")) {
@@ -74,7 +74,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				int left = resolve(interior.getChild(0));
 				int right = resolve(interior.getChild(1));
-				node.setValue(mul(left, right));
+				node.setValue(right * left);
 			}
 	
 			else if (node.toString().equals("/")) {
@@ -82,7 +82,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				int left = resolve(interior.getChild(0));
 				int right = resolve(interior.getChild(1));
-				node.setValue(div(left, right));
+				node.setValue(right / left);
 			}			
 
 			else if (node.toString().equals("%")) {
@@ -90,7 +90,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				int left = resolve(interior.getChild(0));
 				int right = resolve(interior.getChild(1));
-				node.setValue(mod(left, right));
+				node.setValue(right % left);
 			}
 			
 			else if (node.toString().equals("while")) {
@@ -113,7 +113,7 @@ public class Interpreter {
 			else if (node.toString().equals("print")) {
 				process(interior.getChild(0));
 				int child = resolve(interior.getChild(0));
-				print(child);
+				System.out.println(child);
 			}
 			
 			else if (node.toString().equals("<")) {
@@ -214,32 +214,5 @@ public class Interpreter {
 		}
 		return value;
 	}
-	
-	public void assign(String x, int val) {
-		SymbolTableTree.getInstance().updateValue(x, val);
-	}
-	
-	public int add(int x, int y) {
-		return y + x;
-	}
-	
-	public int sub(int x, int y) {
-		return y - x;
-	}
-	
-	public int mul(int x, int y) {
-		return y * x;
-	}
 
-	public int div(int x, int y) {
-		return y / x;
-	}
-	
-	public int mod(int x, int y) {
-		return y % x;
-	}
-	
-	public void print(int x) {
-		System.out.println(x);
-	}
 }
