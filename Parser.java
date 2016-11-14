@@ -720,17 +720,17 @@ public class Parser {
 		if (type == TokenType.INT) { 
 			isMatch = true;
 			
-			if (currentFuncBody == null)
-				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
-			else
-				node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
-		} else if (type == TokenType.DOUBLE) {
-			isMatch = true;
-			
-			if (currentFuncBody == null)
-				node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
-			else
-				node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
+			if (lookahead.getType() == TokenType.INT) {
+				if (currentFuncBody == null)
+					node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
+				else
+					node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), Integer.parseInt(lookahead.getRepresentation()));
+			} else if (lookahead.getType() == TokenType.DOUBLE) {
+				if (currentFuncBody == null)
+					node = syntaxTree.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
+				else
+					node = currentFuncBody.makeLeaf(lookahead.getRepresentation(), Double.parseDouble(lookahead.getRepresentation()));
+			}
 		} else if (type == TokenType.ID){
 			isMatch = true;
 			
