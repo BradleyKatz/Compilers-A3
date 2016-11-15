@@ -1,16 +1,17 @@
 
-public class Number <ValueType> {
+public class Number {
 	
-	public ValueType operation(String op, ValueType x, ValueType y) {
-		ValueType result = null;
+	@SuppressWarnings("unchecked")
+	public Object operation(String op, Object x, Object y) {
+		Object result = null;
 		if (x instanceof Integer && y instanceof Integer) {
-			result = (ValueType) new Integer(operation(op, (int)x, (int)y));
+			result = (Object) new Integer(operation(op, (int)x, (int)y));
 		} else if (x instanceof Integer && y instanceof Double) {
-			result = (ValueType) new Double(operation(op, ((Integer)x).doubleValue(), (double)y));
+			result = (Object) new Double(operation(op, ((Integer)x).doubleValue(), (double)y));
 		} else if (x instanceof Double && y instanceof Integer) {
-			result = (ValueType) new Double(operation(op, (double)x, ((Integer)y).doubleValue()));
+			result = (Object) new Double(operation(op, (double)x, ((Integer)y).doubleValue()));
 		} else if (x instanceof Double && y instanceof Double) {
-			result = (ValueType) new Double(operation(op, (double)x, (double)y));
+			result = (Object) new Double(operation(op, (double)x, (double)y));
 		}
 		return result;
 	}
@@ -39,7 +40,7 @@ public class Number <ValueType> {
 		return result;
 	}
 	
-	public boolean comparison(String op, ValueType x, ValueType y) {
+	public boolean comparison(String op, Object x, Object y) {
 		boolean result = false;
 		if (x instanceof Integer && y instanceof Integer) {
 			result = comparison(op, (int)x, (int)y);
