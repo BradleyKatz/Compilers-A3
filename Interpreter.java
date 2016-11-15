@@ -5,6 +5,7 @@ import java.util.Stack;
 public class Interpreter <ValueType> {
 	private SyntaxTree intermediate;
 	private Stack runtimeStack = new Stack();
+	private Number numberHandler = new Number();
 	
 	// Only handles INTs, not DOUBLEs, and doesn't handle functions
 	// Passes Test1.txt and Test2.txt (with b=1r5 corrected)
@@ -58,7 +59,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				node.setValue(Number.operation("+", right, left));
+				node.setValue(numberHandler.operation("+", right, left));
 			}
 
 			else if (node.toString().equals("-")) {
@@ -66,7 +67,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				node.setValue(Number.operation("-", right, left));
+				node.setValue(numberHandler.operation("-", right, left));
 			}			
 			
 			else if (node.toString().equals("*")) {
@@ -74,7 +75,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				node.setValue(node.setValue(Number.operation("*", right, left)););
+				node.setValue(numberHandler.operation("*", right, left));
 			}
 	
 			else if (node.toString().equals("/")) {
@@ -82,7 +83,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				node.setValue(node.setValue(Number.operation("/", right, left)););
+				node.setValue(numberHandler.operation("/", right, left));
 			}			
 
 			else if (node.toString().equals("%")) {
@@ -90,7 +91,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				node.setValue(node.setValue(Number.operation("%", right, left)););
+				node.setValue(numberHandler.operation("%", right, left));
 			}
 			
 			else if (node.toString().equals("while")) {
@@ -121,7 +122,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				if (Number.comparison("<", right, left))
+				if (numberHandler.comparison("<", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -132,7 +133,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				if (Number.comparison("<", right, left))
+				if (numberHandler.comparison("<", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -143,7 +144,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				if (Number.comparison("<=", right, left))
+				if (numberHandler.comparison("<=", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -154,7 +155,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				if (Number.comparison(">=", right, left))
+				if (numberHandler.comparison(">=", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -165,7 +166,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				if (Number.comparison("==", right, left))
+				if (numberHandler.comparison("==", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -176,7 +177,7 @@ public class Interpreter <ValueType> {
 				process(interior.getChild(1));
 				ValueType left = resolve(interior.getChild(0));
 				ValueType right = resolve(interior.getChild(1));
-				if (Number.comparison("<>", right, left))
+				if (numberHandler.comparison("<>", right, left))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
