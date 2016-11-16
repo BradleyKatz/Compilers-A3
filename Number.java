@@ -57,12 +57,12 @@ public class Number {
 	public static boolean comparison(String op, double d1, double d2) {
 		boolean result = false;
 		switch (op) {
-			case ">": result = d1 > d2;
-			case "<": result = d1 < d2;
-			case ">=": result = d1 >= d2;
-			case "<=": result = d1 <= d2;
-			case "==": result = d1 == d2;
-			case "<>": result = d1 != d2;
+			case ">": result = d1 > d2; break;
+			case "<": result = d1 < d2; break;
+			case ">=": result = d1 >= d2; break;
+			case "<=": result = d1 <= d2; break;
+			case "==": result = d1 == d2; break;
+			case "<>": result = d1 != d2; break;
 		}
 		return result;
 	}
@@ -70,12 +70,12 @@ public class Number {
 	public static boolean comparison(String op, int i1, int i2) {
 		boolean result = false;
 		switch (op) {
-			case ">": result = i1 > i2;
-			case "<": result = i1 < i2;
-			case ">=": result = i1 >= i2;
-			case "<=": result = i1 <= i2;
-			case "==": result = i1 == i2;
-			case "<>": result = i1 != i2;
+			case ">": result = i1 > i2; break;
+			case "<": result = i1 < i2; break;
+			case ">=": result = i1 >= i2; break;
+			case "<=": result = i1 <= i2; break;
+			case "==": result = i1 == i2; break;
+			case "<>": result = i1 != i2; break;
 		}
 		return result;
 	}

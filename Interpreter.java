@@ -122,7 +122,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				Object left = resolve(interior.getChild(0));
 				Object right = resolve(interior.getChild(1));
-				if (numberHandler.comparison("<", right, left))
+				if (numberHandler.comparison("<", left, right))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -133,7 +133,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				Object left = resolve(interior.getChild(0));
 				Object right = resolve(interior.getChild(1));
-				if (numberHandler.comparison("<", right, left))
+				if (numberHandler.comparison(">", left, right))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -144,7 +144,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				Object left = resolve(interior.getChild(0));
 				Object right = resolve(interior.getChild(1));
-				if (numberHandler.comparison("<=", right, left))
+				if (numberHandler.comparison("<=", left, right))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -155,7 +155,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				Object left = resolve(interior.getChild(0));
 				Object right = resolve(interior.getChild(1));
-				if (numberHandler.comparison(">=", right, left))
+				if (numberHandler.comparison(">=", left, right))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -166,7 +166,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				Object left = resolve(interior.getChild(0));
 				Object right = resolve(interior.getChild(1));
-				if (numberHandler.comparison("==", right, left))
+				if (numberHandler.comparison("==", left, right))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
@@ -177,7 +177,7 @@ public class Interpreter {
 				process(interior.getChild(1));
 				Object left = resolve(interior.getChild(0));
 				Object right = resolve(interior.getChild(1));
-				if (numberHandler.comparison("<>", right, left))
+				if (numberHandler.comparison("<>", left, right))
 					interior.setValue(true);
 				else
 					interior.setValue(false);
